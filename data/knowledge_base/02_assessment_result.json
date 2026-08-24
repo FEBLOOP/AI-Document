@@ -1,0 +1,44 @@
+{
+  "knowledge_base": {
+    "name": "IOP Good Example Knowledge Base",
+    "version": "1.0",
+
+    "purpose": "ใช้เป็นรูปแบบอ้างอิงสำหรับการเขียนสรุปผลการประเมิน",
+
+    "rules": {
+      "affects_score": false,
+      "affects_classification": false,
+      "used_for_summary": true,
+      "used_for_style": true,
+      "must_not_invent_evidence": true,
+      "must_not_invent_numbers": true
+    },
+
+    "dimensions": [
+      {
+        "dimension_id": "D1",
+
+        "summary_style": {
+          "structure": [],
+          "tone": "formal_assessment",
+          "detail_level": "high",
+          "preferred_evidence": [],
+          "preferred_metrics": []
+        },
+
+        "strengths_style": {
+          "heading": "ความโดดเด่นหรือจุดแข็งที่สำคัญ",
+          "format": "bullet_list"
+        },
+
+        "development_style": {
+          "heading": "ข้อสังเกตการพัฒนา",
+          "format": "bullet_list",
+          "tone": "constructive"
+        },
+
+        "good_examples": []
+      }
+    ]
+  }
+}

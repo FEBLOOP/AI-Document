@@ -1,0 +1,2050 @@
+{
+  "knowledge_base": {
+    "name": "IOP Good Example Knowledge Base",
+    "version": "1.0",
+    "language": "th",
+    "purpose": "ใช้เป็นตัวอย่างอ้างอิงสำหรับการเรียบเรียงสรุปผลการประเมิน ไม่ใช้เป็นเกณฑ์ตัดสินคะแนน",
+    "source": {
+      "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+      "organization": "พีทีที โกลบอล เคมิคอล จำกัด"
+    },
+    "rules": {
+      "affects_score": false,
+      "affects_classification": false,
+      "used_for_summary_style": true,
+      "must_not_invent_evidence": true,
+      "must_not_invent_numbers": true,
+      "mapping_note": "รายงาน Good Example มีโครงสร้างหลักในระดับมิติ ดังนั้นการผูกกับ criterion เป็นการผูกแบบ dimension-level reference ไม่ได้อ้างว่าเป็นข้อความตัวอย่างเฉพาะ criterion ทุกข้อ"
+    },
+    "dimensions": [
+      {
+        "dimension_id": "D1",
+        "name_th": "ยุทธศาสตร์นวัตกรรม",
+        "name_en": "Innovation Strategy",
+        "summary_style": {
+          "structure": [
+            "Vision",
+            "Innovation Strategy",
+            "Leadership/Ownership",
+            "Communication",
+            "KPI/Monitoring"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "1.1.1",
+            "component_id": "1.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          },
+          {
+            "criterion_id": "1.1.2",
+            "component_id": "1.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          },
+          {
+            "criterion_id": "1.2.1",
+            "component_id": "1.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          },
+          {
+            "criterion_id": "1.2.2",
+            "component_id": "1.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          },
+          {
+            "criterion_id": "1.3.1",
+            "component_id": "1.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          },
+          {
+            "criterion_id": "1.3.2",
+            "component_id": "1.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 1 ยุทธศาสตร์นวัตกรรม (Innovation Strategy)   • นวัตกรรมไม่ใช้เรื่องวิจัย แต่เป็นเรื่องที่ทก\n                                                                                                  ุ คนมีส่วนรวมได้ ภายใต้ Do Less – Do Now – Do More\n                                                     • มีวิสัยทัศน์และยุทธศาสตร์นวัตกรรมที่ชัดเจน และมีเป้าหมายการเป็นผู้นาด้านเคมีภณ  ั ฑ์ พร้อมก้าวสู่องค์กรชั้นาระดับโลก\n•   วิสัยทัศน์และกลยุทธ์ด้านนวัตกรรม (Vision and       มีผลลัพธ์ อันดับ No.1 ในธุรกิจเคมีภัณฑ์ต่อเนื่อง 6 ปี และ Gold Medal ระดับโลกในกลุ่ม Top 5%\n    Strategy)                                        • มีการกาหนดกลยุทธ์ เป้าหมาย และแนวทางการดาเนินงาน ด้วย 3 Steps & 5 Pillars – ครอบคลุม Portfolio\n                                                       Transformation, Competitiveness, High Value & Low Carbon, Balance Sustainability, และ Enabler\n•   ค่านิยมร่วม (Shared Value)                         for Transformation\n                                                     • ผู้บริหารระดับสูง CEO, C-Level, และคณะกรรมการด้านนวัตกรรมให้ความสาคัญ มีส่วนรวมและเข้ามามีบทบาทในการ\n•   การติดตามและประเมินผลยุทธศาสตร์ (Strategic         พั ฒนานวัตกรรมองค์กร ผ่าน community communication และ ideation\n                                                     • มี KPI การพั ฒนานวัตกรรม ที่ครอบคลุมทุกผลิตภัณฑ์และทุกส่วนงานของบริษัท\n    Evaluation)\n                                                     • มีการนาทิศทางการเติบโต เป้าหมาย มาวางแผนกลยุทธ์ และแผนพั ฒนานวัตกรรม ตั้ง โจทย์ มีผลิตภัณฑ์อะไร จะทา\n                                                       นวัตกรรมอะไร ลูกค้ากลุ่มไหน\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                        ภาค",
+            "extracted_pattern": [
+              "Vision",
+              "Innovation Strategy",
+              "Leadership/Ownership",
+              "Communication",
+              "KPI/Monitoring"
+            ],
+            "evidence_pattern": [
+              "วิสัยทัศน์",
+              "ยุทธศาสตร์",
+              "กรอบดำเนินงาน",
+              "บทบาทผู้บริหาร",
+              "KPI",
+              "การสื่อสาร"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D1"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D2",
+        "name_th": "การมุ่งเน้นธุรกิจ",
+        "name_en": "Business Focus",
+        "summary_style": {
+          "structure": [
+            "Market Insight",
+            "Customer Participation",
+            "Business/Portfolio Focus",
+            "Innovation Development",
+            "Business Impact"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "2.1.1",
+            "component_id": "2.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          },
+          {
+            "criterion_id": "2.1.2",
+            "component_id": "2.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          },
+          {
+            "criterion_id": "2.2.1",
+            "component_id": "2.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          },
+          {
+            "criterion_id": "2.2.2",
+            "component_id": "2.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          },
+          {
+            "criterion_id": "2.3.1",
+            "component_id": "2.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          },
+          {
+            "criterion_id": "2.3.2",
+            "component_id": "2.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 2 การมุ่งเน้นธุรกิจ (Business Focus)          • มีการวางแผนตลาดด้วยระบบการเก็บข้อมูลเชิงลึกของตลาดและลูกค้า ระบบ Market-Focused Business\n                                                        Transformation (MFBT) ช่วยพั ฒนาความสามารถในการตอบโจทย์ตลาดได้อย่างชัดเจน ทั้งด้านนวัตกรรม การ\n•   การวางแผนตลาดด้วยข้อมูลเชิงลึก (Market              พั ฒนาผลิตภัณฑ์ และการบริการ และใช้ Data Analytics วิเคราะห์แนวโน้ม/พฤติกรรมผู้บริโภค/เทรนด์ตลาดโลก\n    Insight)                                          • ใช้ Bio-Circular-Green Economy (BCG) / ความยั่งยืน เป็นกลยุทธ์ในการขับเคลื่อนนวัตกรรม\n                                                      • จัดกิจกรรมการ เพื่ มการมีส่วนร่วมของลูกค้า เช่น งาน open house ทุก ๆ ปี ให้ลูกค้ากลุ่มที่มีศักยภาพ/สาคัญ มา\n•   การมีส่วนร่วมของลูกค้า (Customer Participation)     workshop และกาหนดกลุ่มเป้าหมายเพื่ อทา focus group ที่บริษัท\n                                                      • เปิดโอกาสลูกค้ามีส่วนร่วมในกระบวนการพั ฒนานวัตกรรม เช่น Co-creation และการทดสอบต้นแบบร่วมกับลูกค้าใน\n•   การกาหนดกลุ่มเป้าหมายทางธุรกิจ (Business            หลายอุตสาหกรรม\n                                                      • มีการกาหนดกลุ่มเป้าหมายทางธุรกิจ ที่เชื่อมโยงกับกลยุทธ์องค์กรและระบบ R&D Portfolio Management Tools\n    Portfolio)\n                                                        เพื่ อวิเคราะห์และจัดลาดับความสาคัญโครงการการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "Market Insight",
+              "Customer Participation",
+              "Business/Portfolio Focus",
+              "Innovation Development",
+              "Business Impact"
+            ],
+            "evidence_pattern": [
+              "ข้อมูลตลาด",
+              "ข้อมูลลูกค้า",
+              "Data Analytics",
+              "Co-creation",
+              "Focus Group",
+              "Prototype Testing",
+              "Portfolio"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D2"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D3",
+        "name_th": "บุคลากร",
+        "name_en": "People",
+        "summary_style": {
+          "structure": [
+            "Leadership",
+            "Organization Structure",
+            "Innovation Roles",
+            "People Participation",
+            "Capability Development"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "3.1.1",
+            "component_id": "3.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          },
+          {
+            "criterion_id": "3.1.2",
+            "component_id": "3.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          },
+          {
+            "criterion_id": "3.2.1",
+            "component_id": "3.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          },
+          {
+            "criterion_id": "3.2.2",
+            "component_id": "3.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          },
+          {
+            "criterion_id": "3.3.1",
+            "component_id": "3.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          },
+          {
+            "criterion_id": "3.3.2",
+            "component_id": "3.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 3 บุคลากร (People)                        • ผู้บริหารระดับสูงมีวิสัยทัศน์และสนับสนุนนวัตกรรมอย่างเป็นระบบ\n                                                  • มีโครงสร้างองค์กร หน่วยงาน กลุ่มบุคคล ทีมงาน ที่สนับสนุนการพั ฒนานวัตกรรมอย่างชัดเจน\n•   ผู้นานวัตกรรม (Innovation Leader)             • มีกิจกรรมในการพั ฒนาผู้นานวัตกรรมในองค์กร ผ่าน Innovation Champion บุคคลต้นแบบที่ผลักดันการสร้างสรรค์\n                                                    ในองค์กร รวมถึงมีการจัดเวทีแลกเปลี่ยนไอเดีย เช่น Hackathon และ Innovation Day\n•   โครงสร้างองค์กร (Organization Structure)      • มีกลไกเพื่ อเปิดโอกาสให้บุคคลหรือกลุ่มบุคคลขับเคลื่อนด้านความคิดสร้างสรรค์ เพื่ อพั ฒนาสู่นวัตกรรม ภายใต้กลไก\n                                                    GC Investment management\n•   ผู้นากิจกรรมนวัตกรรม (Stewardship)\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                           11,202 คน",
+            "extracted_pattern": [
+              "Leadership",
+              "Organization Structure",
+              "Innovation Roles",
+              "People Participation",
+              "Capability Development"
+            ],
+            "evidence_pattern": [
+              "ผู้บริหาร",
+              "โครงสร้าง",
+              "Innovation Champion",
+              "กิจกรรมพนักงาน",
+              "Hackathon",
+              "Innovation Day"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D3"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D4",
+        "name_th": "องค์ความรู้",
+        "name_en": "Knowledge",
+        "summary_style": {
+          "structure": [
+            "KM Strategy",
+            "Knowledge Creation",
+            "Knowledge Sharing",
+            "Learning",
+            "Cross-functional Collaboration"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "4.1.1",
+            "component_id": "4.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.1.2",
+            "component_id": "4.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.1.3",
+            "component_id": "4.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.2.1",
+            "component_id": "4.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.2.2",
+            "component_id": "4.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.3.1",
+            "component_id": "4.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          },
+          {
+            "criterion_id": "4.3.2",
+            "component_id": "4.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 4 องค์ความรู้ (Knowledge)                  • มีระบบ KM ที่ชัดเจน มี Knowledge Management Roadmap ที่ครอบคลุม Innovation KM Vision, Mission,\n                                                     Objective สอดคล้องกับกลยุทธ์องค์กร และมีการแชร์ความรู้ ระหว่างหน่วยงานและ BU ผ่านโครงการ Knowledge\n•   การสร้างความรู้ (Knowledge Creation)             Sharing Technology Development Roadshow\n                                                   • มีการกาหนดแผนงานและเป้าหมายสอดคล้องกับ KM Strategy เพื่ อส่งเสริมให้พนักงานมีความรู้และทักษะ\n•   การแบ่งปันความรู้ (Knowledge Sharing)            ความสามารถ มีความพร้อมตามกลยุทธ์ และทิศทางการพั ฒนาบุคลากรขององค์กรในระยะสั้น ระยะกลาง และระยะยาว\n                                                   • มีการสร้าง แบ่งปัน และแลกเปลี่ยนความรู้ (Knowledge Management Activities) ผ่าน 4 แกนหลัก ได้แก่\n•   การเป็นองค์กรแห่งการเรียนรู้ (Organizational     Learning, Creativity & Ideation, Knowledge Sharing และ Collaboration\n    Learning)                                      • มีการจัดกิจกรรมที่ส่งเสริมการเป็นองค์กรแห่งการเรียนรู้ เช่น Innovation Day, Learning Cycle Expert House,\n                                                     ระบบ E-Learning , Training & Workshop by Expert, Knowledge Exchange across BU, การทางานร่วมกับ\n                                                     ลูกค้าและคู่ค้า, และ Open Innovation Collaboration Project เป็นต้น\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                               จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                              11,202 คน",
+            "extracted_pattern": [
+              "KM Strategy",
+              "Knowledge Creation",
+              "Knowledge Sharing",
+              "Learning",
+              "Cross-functional Collaboration"
+            ],
+            "evidence_pattern": [
+              "KM Roadmap",
+              "Knowledge Sharing",
+              "E-Learning",
+              "Training",
+              "Workshop",
+              "Knowledge Exchange"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D4"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D5",
+        "name_th": "วัฒนธรรม",
+        "name_en": "Culture",
+        "summary_style": {
+          "structure": [
+            "Shared Values",
+            "Innovation Mindset",
+            "Motivation/Recognition",
+            "Innovation Atmosphere",
+            "Collaboration"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "5.1.1",
+            "component_id": "5.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 5 วัฒนธรรม (Culture)                      • ค่านิยมร่วมและ Innovation culture : Do Less – Do Now – Do More ที่มีเป้าหมายชัดเจน สามารถวัดผลได้ การ\n                                                    สื่อสารสร้างการรับรู้ภายในองค์กรอย่างทั่วถึง มีส่วนร่วม สร้างชุมชนเรียนรู้ เชื่อมวัฒนธรรมกับยุทธศาสตร์ พร้อม\n•   การสร้างแรงจูงใจ (Motivation)                   ระบบติดตาม.\n                                                  • การปลูกฝังค่านิยม “Innovation is Everyone’s Business” ผ่าน GC Innovation Day 2024 โดยมีผู้เข้าร่วมกว่า\n•   การสร้างบรรยากาศนวัตกรรม (Atmosphere)           1,151 คน และสร้างแรงจูงใจผ่านเวที Recognition & Innovation Award\n                                                  • การสร้าง Mindset ทั้งองค์กร ผานสื่อและกิจกรรมต่อเนื่อง GC Standout เพื่ อปลูกฝังให้บุคลากรกล้าคิด กล้าลอง\n•   การทางานร่วมกัน (Collaboration)                 และการเปิดพื้ นที่แลกเปลี่ยนความรู้และทดลอง Expert House, Inno-Community ,Design Thinking Program\n                                                    ร่วมถึงการสร้างค่านิยมแห่งการเป็นผู้ประกอบการ\n                                                  • มีกลไกการนาเสนอไอเดียเพื่ อพฒนานวัตกรรมจากพนักงาน โดยพนักงานสามารถเข้าร่วมทีมในการพั ฒนาได้ ภ้า BU\n                                                    เลือกไอเดียนัน\n                                                                 ้ ไปพั ฒนา จะมี งปม. และการประเมิน feasibility เพื่ อดูความเป็นไปได้ในการพั ฒนานวัตกรรมนัน ้ ๆ\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                            จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                        รัฐวิสาหกิจ",
+            "extracted_pattern": [
+              "Shared Values",
+              "Innovation Mindset",
+              "Motivation/Recognition",
+              "Innovation Atmosphere",
+              "Collaboration"
+            ],
+            "evidence_pattern": [
+              "ค่านิยม",
+              "Innovation is Everyone’s Business",
+              "Recognition",
+              "Innovation Award",
+              "Community",
+              "Design Thinking"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D5"
+            }
+          },
+          {
+            "criterion_id": "5.1.2",
+            "component_id": "5.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 5 วัฒนธรรม (Culture)                      • ค่านิยมร่วมและ Innovation culture : Do Less – Do Now – Do More ที่มีเป้าหมายชัดเจน สามารถวัดผลได้ การ\n                                                    สื่อสารสร้างการรับรู้ภายในองค์กรอย่างทั่วถึง มีส่วนร่วม สร้างชุมชนเรียนรู้ เชื่อมวัฒนธรรมกับยุทธศาสตร์ พร้อม\n•   การสร้างแรงจูงใจ (Motivation)                   ระบบติดตาม.\n                                                  • การปลูกฝังค่านิยม “Innovation is Everyone’s Business” ผ่าน GC Innovation Day 2024 โดยมีผู้เข้าร่วมกว่า\n•   การสร้างบรรยากาศนวัตกรรม (Atmosphere)           1,151 คน และสร้างแรงจูงใจผ่านเวที Recognition & Innovation Award\n                                                  • การสร้าง Mindset ทั้งองค์กร ผานสื่อและกิจกรรมต่อเนื่อง GC Standout เพื่ อปลูกฝังให้บุคลากรกล้าคิด กล้าลอง\n•   การทางานร่วมกัน (Collaboration)                 และการเปิดพื้ นที่แลกเปลี่ยนความรู้และทดลอง Expert House, Inno-Community ,Design Thinking Program\n                                                    ร่วมถึงการสร้างค่านิยมแห่งการเป็นผู้ประกอบการ\n                                                  • มีกลไกการนาเสนอไอเดียเพื่ อพฒนานวัตกรรมจากพนักงาน โดยพนักงานสามารถเข้าร่วมทีมในการพั ฒนาได้ ภ้า BU\n                                                    เลือกไอเดียนัน\n                                                                 ้ ไปพั ฒนา จะมี งปม. และการประเมิน feasibility เพื่ อดูความเป็นไปได้ในการพั ฒนานวัตกรรมนัน ้ ๆ\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                            จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                        รัฐวิสาหกิจ",
+            "extracted_pattern": [
+              "Shared Values",
+              "Innovation Mindset",
+              "Motivation/Recognition",
+              "Innovation Atmosphere",
+              "Collaboration"
+            ],
+            "evidence_pattern": [
+              "ค่านิยม",
+              "Innovation is Everyone’s Business",
+              "Recognition",
+              "Innovation Award",
+              "Community",
+              "Design Thinking"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D5"
+            }
+          },
+          {
+            "criterion_id": "5.2.1",
+            "component_id": "5.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 5 วัฒนธรรม (Culture)                      • ค่านิยมร่วมและ Innovation culture : Do Less – Do Now – Do More ที่มีเป้าหมายชัดเจน สามารถวัดผลได้ การ\n                                                    สื่อสารสร้างการรับรู้ภายในองค์กรอย่างทั่วถึง มีส่วนร่วม สร้างชุมชนเรียนรู้ เชื่อมวัฒนธรรมกับยุทธศาสตร์ พร้อม\n•   การสร้างแรงจูงใจ (Motivation)                   ระบบติดตาม.\n                                                  • การปลูกฝังค่านิยม “Innovation is Everyone’s Business” ผ่าน GC Innovation Day 2024 โดยมีผู้เข้าร่วมกว่า\n•   การสร้างบรรยากาศนวัตกรรม (Atmosphere)           1,151 คน และสร้างแรงจูงใจผ่านเวที Recognition & Innovation Award\n                                                  • การสร้าง Mindset ทั้งองค์กร ผานสื่อและกิจกรรมต่อเนื่อง GC Standout เพื่ อปลูกฝังให้บุคลากรกล้าคิด กล้าลอง\n•   การทางานร่วมกัน (Collaboration)                 และการเปิดพื้ นที่แลกเปลี่ยนความรู้และทดลอง Expert House, Inno-Community ,Design Thinking Program\n                                                    ร่วมถึงการสร้างค่านิยมแห่งการเป็นผู้ประกอบการ\n                                                  • มีกลไกการนาเสนอไอเดียเพื่ อพฒนานวัตกรรมจากพนักงาน โดยพนักงานสามารถเข้าร่วมทีมในการพั ฒนาได้ ภ้า BU\n                                                    เลือกไอเดียนัน\n                                                                 ้ ไปพั ฒนา จะมี งปม. และการประเมิน feasibility เพื่ อดูความเป็นไปได้ในการพั ฒนานวัตกรรมนัน ้ ๆ\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                            จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                        รัฐวิสาหกิจ",
+            "extracted_pattern": [
+              "Shared Values",
+              "Innovation Mindset",
+              "Motivation/Recognition",
+              "Innovation Atmosphere",
+              "Collaboration"
+            ],
+            "evidence_pattern": [
+              "ค่านิยม",
+              "Innovation is Everyone’s Business",
+              "Recognition",
+              "Innovation Award",
+              "Community",
+              "Design Thinking"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D5"
+            }
+          },
+          {
+            "criterion_id": "5.3.1",
+            "component_id": "5.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 5 วัฒนธรรม (Culture)                      • ค่านิยมร่วมและ Innovation culture : Do Less – Do Now – Do More ที่มีเป้าหมายชัดเจน สามารถวัดผลได้ การ\n                                                    สื่อสารสร้างการรับรู้ภายในองค์กรอย่างทั่วถึง มีส่วนร่วม สร้างชุมชนเรียนรู้ เชื่อมวัฒนธรรมกับยุทธศาสตร์ พร้อม\n•   การสร้างแรงจูงใจ (Motivation)                   ระบบติดตาม.\n                                                  • การปลูกฝังค่านิยม “Innovation is Everyone’s Business” ผ่าน GC Innovation Day 2024 โดยมีผู้เข้าร่วมกว่า\n•   การสร้างบรรยากาศนวัตกรรม (Atmosphere)           1,151 คน และสร้างแรงจูงใจผ่านเวที Recognition & Innovation Award\n                                                  • การสร้าง Mindset ทั้งองค์กร ผานสื่อและกิจกรรมต่อเนื่อง GC Standout เพื่ อปลูกฝังให้บุคลากรกล้าคิด กล้าลอง\n•   การทางานร่วมกัน (Collaboration)                 และการเปิดพื้ นที่แลกเปลี่ยนความรู้และทดลอง Expert House, Inno-Community ,Design Thinking Program\n                                                    ร่วมถึงการสร้างค่านิยมแห่งการเป็นผู้ประกอบการ\n                                                  • มีกลไกการนาเสนอไอเดียเพื่ อพฒนานวัตกรรมจากพนักงาน โดยพนักงานสามารถเข้าร่วมทีมในการพั ฒนาได้ ภ้า BU\n                                                    เลือกไอเดียนัน\n                                                                 ้ ไปพั ฒนา จะมี งปม. และการประเมิน feasibility เพื่ อดูความเป็นไปได้ในการพั ฒนานวัตกรรมนัน ้ ๆ\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                            จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                        รัฐวิสาหกิจ",
+            "extracted_pattern": [
+              "Shared Values",
+              "Innovation Mindset",
+              "Motivation/Recognition",
+              "Innovation Atmosphere",
+              "Collaboration"
+            ],
+            "evidence_pattern": [
+              "ค่านิยม",
+              "Innovation is Everyone’s Business",
+              "Recognition",
+              "Innovation Award",
+              "Community",
+              "Design Thinking"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D5"
+            }
+          },
+          {
+            "criterion_id": "5.3.2",
+            "component_id": "5.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 5 วัฒนธรรม (Culture)                      • ค่านิยมร่วมและ Innovation culture : Do Less – Do Now – Do More ที่มีเป้าหมายชัดเจน สามารถวัดผลได้ การ\n                                                    สื่อสารสร้างการรับรู้ภายในองค์กรอย่างทั่วถึง มีส่วนร่วม สร้างชุมชนเรียนรู้ เชื่อมวัฒนธรรมกับยุทธศาสตร์ พร้อม\n•   การสร้างแรงจูงใจ (Motivation)                   ระบบติดตาม.\n                                                  • การปลูกฝังค่านิยม “Innovation is Everyone’s Business” ผ่าน GC Innovation Day 2024 โดยมีผู้เข้าร่วมกว่า\n•   การสร้างบรรยากาศนวัตกรรม (Atmosphere)           1,151 คน และสร้างแรงจูงใจผ่านเวที Recognition & Innovation Award\n                                                  • การสร้าง Mindset ทั้งองค์กร ผานสื่อและกิจกรรมต่อเนื่อง GC Standout เพื่ อปลูกฝังให้บุคลากรกล้าคิด กล้าลอง\n•   การทางานร่วมกัน (Collaboration)                 และการเปิดพื้ นที่แลกเปลี่ยนความรู้และทดลอง Expert House, Inno-Community ,Design Thinking Program\n                                                    ร่วมถึงการสร้างค่านิยมแห่งการเป็นผู้ประกอบการ\n                                                  • มีกลไกการนาเสนอไอเดียเพื่ อพฒนานวัตกรรมจากพนักงาน โดยพนักงานสามารถเข้าร่วมทีมในการพั ฒนาได้ ภ้า BU\n                                                    เลือกไอเดียนัน\n                                                                 ้ ไปพั ฒนา จะมี งปม. และการประเมิน feasibility เพื่ อดูความเป็นไปได้ในการพั ฒนานวัตกรรมนัน ้ ๆ\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                            จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                        รัฐวิสาหกิจ",
+            "extracted_pattern": [
+              "Shared Values",
+              "Innovation Mindset",
+              "Motivation/Recognition",
+              "Innovation Atmosphere",
+              "Collaboration"
+            ],
+            "evidence_pattern": [
+              "ค่านิยม",
+              "Innovation is Everyone’s Business",
+              "Recognition",
+              "Innovation Award",
+              "Community",
+              "Design Thinking"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D5"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D6",
+        "name_th": "ทรัพยากร",
+        "name_en": "Resource",
+        "summary_style": {
+          "structure": [
+            "Resource Allocation",
+            "Investment",
+            "People/Infrastructure",
+            "Technology",
+            "Change Support"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "6.1.1",
+            "component_id": "6.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.1.2",
+            "component_id": "6.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.1.3",
+            "component_id": "6.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.2.1",
+            "component_id": "6.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.2.2",
+            "component_id": "6.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.3.1",
+            "component_id": "6.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          },
+          {
+            "criterion_id": "6.3.2",
+            "component_id": "6.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 6 ทรัพยากร (Resource)                     • จัดสรรงบประมาณเพื่ อสนับสนุนนวัตกรรมและการพั ฒนาความคิดสร้างสรรค์อย่างต่อเนื่อง ร่วมถึงมีแผนการลงทุน\n                                                    ด้านเทคโนโลยีใหม่ ๆ เพื่ อรองรับการพั ฒนานวัตกรรมในระยะยาว มีการ Balanced Portfolio Investment โดย\n•   การจัดสรรทรัพยากร (Resource Allocation)         จัดสรรทรัพยากร 70% ให้ธุรกิจเดิม และ 30% สู่ธุรกิจใหม่ (Horizon 1-3)\n                                                  • มีการลงทุนใน Corporate Venture Capital ทั้งกองทุนและสตาร์ทอัพทั่วโลก ครอบคลุม Advanced Materials,\n•   การสนับสนุนบุคลากร (Personnel Support)          Renewable/Circularity, Net-Zero, Industrial Digital แสดงถึงการกระจายความเสี่ยง\n                                                  • Innovation Resource Commitment ลงทุนกว่า 819 ล้านบาทต่อปี (~0.54% ของรายได้ ) พร้อมบุคลากร R&D\n•   การจัดการความเปลี่ยนแปลง (Change                มากกว่า 250 คน และพั นธมิตรมากกว่า 700 คน 30 ศูนย์วิจัย\n    Management)                                   • มีการนาเทคโนโลยีดิจิทัลและ AI มาบริหารทรัพยากรบุคคล เพื่ อยกระดับประสิทธิภาพการจัดการทรัพยากรมนุษย์\n                                                  • การจัดการความเปลี่ยนแปลง ผ่าน Horizon 1–3 ในการบริหารการเปลี่ยนแปลงระหว่างธุรกิจเดิมสู่ธุรกิจใหม่ และ\n                                                    Open Innovation & Ecosystem Collaboration การเปิดรับความร่วมมือจากพั นธมิตร สร้างการเปลี่ยนแปลงและ\n                                                    นวัตกรรมจากในและภายนอกองค์กร\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                   ภาค                                             จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จา",
+            "extracted_pattern": [
+              "Resource Allocation",
+              "Investment",
+              "People/Infrastructure",
+              "Technology",
+              "Change Support"
+            ],
+            "evidence_pattern": [
+              "งบประมาณ",
+              "สัดส่วนลงทุน",
+              "R&D Personnel",
+              "Research Center",
+              "Partner",
+              "Digital",
+              "AI"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D6"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D7",
+        "name_th": "กระบวนการ",
+        "name_en": "Process",
+        "summary_style": {
+          "structure": [
+            "Innovation Process",
+            "Gate/Control",
+            "Portfolio/Roadmap",
+            "Partner/Supply Chain",
+            "Open Innovation"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "7.1.1",
+            "component_id": "7.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          },
+          {
+            "criterion_id": "7.1.2",
+            "component_id": "7.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          },
+          {
+            "criterion_id": "7.2.1",
+            "component_id": "7.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          },
+          {
+            "criterion_id": "7.2.2",
+            "component_id": "7.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          },
+          {
+            "criterion_id": "7.3.1",
+            "component_id": "7.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          },
+          {
+            "criterion_id": "7.3.2",
+            "component_id": "7.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 7 กระบวนการ (Process)                     • มีกระบวนการพั ฒนานวัตกรรมที่เป็นระบบ ครอบคลุมตั้งแต่ Idea / Execution / output พร้อม Gate Review เพื่ อ\n                                                    ลดความเสี่ยง เป็น Best Practice ระดับสากล\n•   กระบวนการนวัตกรรม (Innovation Process)        • Portfolio & Roadmap Management มีการวางแผนทรัพยากร เทคโนโลยี และ Partnering ในระยะยาว สอดคล้อง\n                                                    กับกลยุทธ์ Horizon 1-3\n•   การจัดการเครือข่ายพั นธมิตร (Partnership)     • การจัดการห่วงโซ่อุปทาน มีการบูรณาการห่วงโซ่อุปทานกับพั นธมิตร เช่น Toray, Kordsa และ Permodalan เพื่ อ\n                                                    พั ฒนาผลิตภัณฑ์และกระบวนการใหม่ ๆ เป็นการยกระดับ Innovation Value Chain อย่างมีประสิทธิภาพ. รวมถึง\n•   การจัดการห่วงโซ่อุปทาน (Supply Chains)          การเชื่อมโยงสารสนเทศจาก Market, Customer, Competitor และ PESTLE Analysis เพื่ อนามากาหนดทิศทางการ\n                                                    พั ฒนานวัตกรรมในห่วงโซ่อุปทาน\n                                                  • การจัดการเครือข่ายพั นธมิตร ผ่าน Open Innovation Collaboration ร่วมกีบ มหาวิทยาลัย หน่วยวิจัย และบริษัท\n                                                    ระดับโลก เช่น Bosch, ซึ่งเครือข่ายพั นธมิตรในการพั ฒนานวัตกรรม\nภาพข้อมูลนาเสนอที่นา่ สนใจ\n                       รายงานการประเมินศักยภาพองค์กร รางวัลนวัตกรรมแห่งชาติ ด้านองค์กรนวัตกรรม\n                             ชื่อองค์กร                                     ภาค                                              จานวนบุคลากร\n                   พี ทีที โกลบอล เคมิคอล จากัด                         รัฐวิสาหกิจ                                             11,202 คน",
+            "extracted_pattern": [
+              "Innovation Process",
+              "Gate/Control",
+              "Portfolio/Roadmap",
+              "Partner/Supply Chain",
+              "Open Innovation"
+            ],
+            "evidence_pattern": [
+              "Idea",
+              "Execution",
+              "Output",
+              "Gate Review",
+              "Portfolio",
+              "Roadmap",
+              "Partner",
+              "Supply Chain"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D7"
+            }
+          }
+        ]
+      },
+      {
+        "dimension_id": "D8",
+        "name_th": "ผลลัพธ์นวัตกรรม",
+        "name_en": "Result",
+        "summary_style": {
+          "structure": [
+            "Innovation Output",
+            "Operational Impact",
+            "Financial Impact",
+            "Knowledge/IP",
+            "Recognition"
+          ],
+          "tone": "formal_assessment",
+          "evidence_first": true,
+          "use_quantitative_evidence_when_available": true,
+          "detail_level": "high"
+        },
+        "criteria": [
+          {
+            "criterion_id": "8.1.1",
+            "component_id": "8.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          },
+          {
+            "criterion_id": "8.1.2",
+            "component_id": "8.1",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          },
+          {
+            "criterion_id": "8.2.1",
+            "component_id": "8.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          },
+          {
+            "criterion_id": "8.2.2",
+            "component_id": "8.2",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          },
+          {
+            "criterion_id": "8.3.1",
+            "component_id": "8.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          },
+          {
+            "criterion_id": "8.3.2",
+            "component_id": "8.3",
+            "mapping_level": "dimension_level_reference",
+            "original_text": "มิติที่ 8 ผลลัพธ์นวัตกรรม (Result)                • มีผลผลิตทางนวัตกรรม ที่สะท้อนถึงการพั ฒนานวัตกรรมอย่างต่อเนื่อง เช่น Process Innovation 6 โครงการ และ\n                                                    Process Prototype 12 รายการ / Product Innovation 20 โครงการ และ Product Prototype 17 รายการ\n•   ผลผลิตทางนวัตกรรม (Innovation Output)           แสดงว่าบริษัทสามารถพั ฒนาผลิตภัณฑ์ใหม่ออกสู่ตลาดอย่างสมา่ เสมอ และพั ฒนากระบวนการผลิตอย่างต่อเนือ  ่ งทุกปี\n                                                  • มีนวัตกรรมที่ช่วยลดเวลาในการผลิต ลดพลังงานกว่า 30,000 GJ/ปี และลด CO₂ ได้ 1,700 ตัน/ปี / เพิ่ ม Yield\n•   รายได้จากนวัตกรรม (Innovation Revenue)          +1.6%\n                                                  • มีผลตอบแทนนวัตกรรมชัดเจน ได้แก่ Innovation Contribution 2,761 ล้านบาท และ Additional Benefit 35.4\n•   ผลผลิตเชิงความรู้ (Intellectual Asset)          ล้านบาท ลดก๊าซเรือนกระจก 0.9 MtCO₂e และสร้าง EBITDA uplift >30 MTHB/ปี จาก New Products\n                                                  • มีผลผลิตเชิงความรู้ที่หลากหลาย เช่น Knowledge 210 เรื่อง, Shared Practice 63 เรื่อง, Best Practice 34 เรื่อง\n                                                    และ Innovation Academy 143 หลักสูตร การบริหารจัดการสิทธิบัตรเชิงรุก ครอบคลุมอเมริกา ยุโรป และเอเชีย\n                                                  • เป็น Best Practice: International Sustainability Leadership โดยได้รับการจัดอันดับ DJSI No.1 Chemicals\n                                                    Sector ต่อเนื่อง 6 ปี\nภาพข้อมูลนาเสนอที่นา่ สนใจ",
+            "extracted_pattern": [
+              "Innovation Output",
+              "Operational Impact",
+              "Financial Impact",
+              "Knowledge/IP",
+              "Recognition"
+            ],
+            "evidence_pattern": [
+              "จำนวนโครงการ",
+              "Prototype",
+              "รายได้/ผลตอบแทน",
+              "Energy",
+              "CO2",
+              "Yield",
+              "Knowledge",
+              "Best Practice",
+              "Patent"
+            ],
+            "summary_style": {
+              "tone": "formal_assessment",
+              "order": [
+                "ข้อเท็จจริง",
+                "หลักฐานสำคัญ",
+                "ผลลัพธ์/ตัวเลข",
+                "จุดแข็ง",
+                "ข้อสังเกต",
+                "ข้อเสนอแนะ"
+              ],
+              "must_use_only_verified_evidence": true
+            },
+            "source_reference": {
+              "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf",
+              "dimension": "D8"
+            }
+          }
+        ]
+      }
+    ],
+    "overall_example": {
+      "structure": [
+        "Executive Summary",
+        "Key Strengths",
+        "Development Observations",
+        "Evidence/Quantitative Results"
+      ],
+      "source_reference": {
+        "document": "NIA Award_short Assessment report_2025_PTT_GC.pdf"
+      },
+      "note": "ใช้เป็นรูปแบบการเขียนภาพรวม ไม่ใช้เปลี่ยนผลคะแนนจาก Assessment Engine"
+    }
+  }
+}

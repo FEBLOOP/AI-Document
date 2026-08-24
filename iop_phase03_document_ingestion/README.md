@@ -1,0 +1,31 @@
+# IOP Phase 03 — Document Ingestion
+
+## เป้าหมาย
+PDF บริษัท -> Native Text หรือ OCR -> Normalized JSON พร้อม page/evidence metadata
+
+## Flow
+Company PDF -> Native Text Extraction -> ตรวจ text coverage -> ถ้าไม่พอ OCR -> Normalized Document JSON -> Phase 04 Chunking
+
+## ติดตั้ง
+pip install -r requirements.txt
+
+ต้องติดตั้ง Tesseract OCR เพิ่ม และมี language data `tha` + `eng` สำหรับเอกสารภาษาไทย/อังกฤษ
+
+## Run
+python -m app.main data/input/company.pdf
+
+บังคับ OCR:
+python -m app.main data/input/company.pdf --force-ocr
+
+## Output
+`data/output/DOC_<SHA256_PREFIX>.json`
+
+เก็บ `document_id`, SHA-256, page, extraction_method, OCR flag, text, block_id, source, confidence และ bounding box เพื่อให้ Phase Assessment ย้อนกลับไปหา Evidence ได้
+
+## Design decisions
+- ไม่ OCR ทุกไฟล์: อ่าน native text ก่อน เพื่อลดเวลาและลด OCR error
+- ถ้า text usable น้อยกว่า 60% ของหน้า จะใช้ OCR
+- Phase 03 ยังไม่จำแนก D1-D8 และยังไม่ให้คะแนน
+
+## Next
+Phase 04: Chunking + Section Detection + Metadata สำหรับ D1-D8 Classifier
