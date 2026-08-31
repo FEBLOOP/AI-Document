@@ -1,0 +1,8 @@
+{
+  "chunk_max_chars": 1400,
+  "chunk_overlap_blocks": 1,
+  "min_section_heading_chars": 3,
+  "embedding_provider": "none",
+  "embedding_model": "all-MiniLM-L6-v2",
+  "embedding_dimensions": 256
+}

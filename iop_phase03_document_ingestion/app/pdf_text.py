@@ -1,9 +1,9 @@
-import fitz
+import pymupdf
 from .models import DocumentPage, TextBlock
 
 def extract_text_from_pdf(pdf_path: str) -> list[DocumentPage]:
     pages = []
-    with fitz.open(pdf_path) as doc:
+    with pymupdf.open(pdf_path) as doc:
         for page_no, page in enumerate(doc, 1):
             blocks = []
             for block_no, block in enumerate(page.get_text("blocks"), 1):

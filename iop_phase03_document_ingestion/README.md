@@ -17,10 +17,16 @@ python -m app.main data/input/company.pdf
 บังคับ OCR:
 python -m app.main data/input/company.pdf --force-ocr
 
+OCR ค่าเริ่มต้นคือ 300 DPI, PSM 3 และ preprocessing แบบ `auto` (grayscale, contrast และ denoise)
+สำหรับเอกสารที่เป็นฟอร์มหรือย่อหน้ารูปแบบสม่ำเสมอ ใช้ PSM 6:
+python -m app.main data/input/company.pdf --force-ocr --ocr-psm 6
+
+ปิด preprocessing หรือใช้ภาพขาวดำได้ด้วย `--ocr-preprocess none` หรือ `--ocr-preprocess binary`
+
 ## Output
 `data/output/DOC_<SHA256_PREFIX>.json`
 
-เก็บ `document_id`, SHA-256, page, extraction_method, OCR flag, text, block_id, source, confidence และ bounding box เพื่อให้ Phase Assessment ย้อนกลับไปหา Evidence ได้
+เก็บ `document_id`, SHA-256, page, extraction_method, OCR flag, text, block_id, source, confidence และ bounding box เพื่อให้ Phase Assessment ย้อนกลับไปหา Evidence ได้ OCR blocks มาจากตำแหน่ง block/line จริงของ Tesseract ไม่ใช่การรวมทั้งหน้า
 
 ## Design decisions
 - ไม่ OCR ทุกไฟล์: อ่าน native text ก่อน เพื่อลดเวลาและลด OCR error

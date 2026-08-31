@@ -18,7 +18,8 @@ def needs_ocr(pages, min_chars: int = 30, min_text_pages_ratio: float = 0.60) ->
     return usable / len(pages) < min_text_pages_ratio
 
 def ingest_pdf(pdf_path: str, output_dir: str = "data/output", force_ocr: bool = False,
-               ocr_lang: str = "tha+eng", ocr_dpi: int = 200):
+               ocr_lang: str = "tha+eng", ocr_dpi: int = 300, ocr_psm: int = 3,
+               ocr_preprocess: str = "auto"):
     pdf = Path(pdf_path)
     if not pdf.exists():
         raise FileNotFoundError(f"ไม่พบไฟล์: {pdf}")
@@ -29,7 +30,7 @@ def ingest_pdf(pdf_path: str, output_dir: str = "data/output", force_ocr: bool =
     document_id = f"DOC_{file_hash[:12].upper()}"
     native = extract_text_from_pdf(str(pdf))
     use_ocr = force_ocr or needs_ocr(native)
-    pages = ocr_pdf(str(pdf), ocr_dpi, ocr_lang) if use_ocr else native
+    pages = ocr_pdf(str(pdf), ocr_dpi, ocr_lang, ocr_psm, ocr_preprocess) if use_ocr else native
     result = {
         "schema_version": "1.0",
         "document_id": document_id,
@@ -41,6 +42,8 @@ def ingest_pdf(pdf_path: str, output_dir: str = "data/output", force_ocr: bool =
         "ocr_used": use_ocr,
         "ocr_language": ocr_lang if use_ocr else None,
         "ocr_dpi": ocr_dpi if use_ocr else None,
+        "ocr_psm": ocr_psm if use_ocr else None,
+        "ocr_preprocess": ocr_preprocess if use_ocr else None,
         "page_count": len(pages),
         "pages": [p.to_dict() for p in pages],
     }
