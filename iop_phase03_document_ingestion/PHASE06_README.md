@@ -16,10 +16,10 @@ Because `DOC_DD3C35531469_phase05_evidence.json` is an evidence-only package, it
 
 ## LLM narrative run
 
-Use a Phase 05 output produced with `--provider openai`, install `openai`, and set `OPENAI_API_KEY`.
+Use a Phase 05 output produced with an LLM provider and configure `IOP_LLM_MODEL=Qwen/Qwen3-8B` (the default). The Hugging Face provider loads this model directly and uses Qwen's native chat template with thinking disabled so report JSON remains parseable. Set `HF_TOKEN` if your Hugging Face account needs higher download rate limits. Ollama and another OpenAI-compatible Qwen endpoint remain available as alternatives.
 
 ```powershell
-python -m phase06.cli --phase05 ".\data\output\DOC_DD3C35531469_phase05_assessment.json" --good-examples "..\data\knowledge_base\good_examples_kb.json" --output ".\data\output\DOC_DD3C35531469_phase06_summary.json" --provider openai --model gpt-4.1-mini
+python -m phase06.cli --phase05 ".\data\output\DOC_DD3C35531469_phase05_assessment.json" --good-examples "..\data\knowledge_base\good_examples_kb.json" --output ".\data\output\DOC_DD3C35531469_phase06_summary.json" --provider huggingface
 ```
 
 The model receives only Phase 05 and the Good Examples style patterns. Its contract is to write prose and choose only existing evidence chunk IDs. It must not rescore, add evidence, add missing points, add strengths, add numbers, or state new facts. The program retains the original citation objects, including page and source-block provenance.

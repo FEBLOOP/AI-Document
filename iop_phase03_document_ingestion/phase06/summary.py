@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import copy
 import json
-import os
 from collections import OrderedDict
 from datetime import datetime, timezone
 from typing import Any
+
+from llm import LLMSettings, complete_json, load_llm_settings
 
 from . import SCHEMA_VERSION
 from .styles import load_good_example_styles
@@ -87,26 +88,22 @@ def _template_overall(dimensions: list[dict[str, Any]], overall_style: dict[str,
     return f"สรุปนี้เรียบเรียงจากผลประเมิน Phase 05 จำนวน {assessed} จาก {total} เกณฑ์ ตามโครงสร้าง Good Examples: {', '.join(overall_style.get('structure', []))}."
 
 
-def _openai_narratives(phase05: dict[str, Any], styles: dict[str, Any], model: str) -> dict[str, Any]:
-    from openai import OpenAI
+def _llm_narratives(phase05: dict[str, Any], styles: dict[str, Any], settings: LLMSettings) -> dict[str, Any]:
     packet = {"phase05": phase05, "good_example_styles": styles,
               "task": "Write only summary prose and evidence chunk IDs. Do not score, reassess, add strengths, add missing points, add numbers, or add facts. Use only supplied Phase 05 assessment fields and evidence. Each cited chunk_id must come from that criterion's evidence."}
-    response = OpenAI(api_key=os.environ.get("OPENAI_API_KEY")).chat.completions.create(
-        model=model, temperature=0, response_format={"type": "json_object"},
-        messages=[
+    return complete_json(settings, [
             {"role": "system", "content": "You are a Thai assessment-report editor. Good Examples control only structure and tone. Phase 05 is immutable. Return JSON: overall_summary and dimensions [{dimension_id, summary, criteria:[{criterion_id, summary, citation_chunk_ids}]}]."},
             {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
-        ],
-    )
-    return json.loads(response.choices[0].message.content)
+        ])
 
 
-def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provider: str = "none", model: str = "gpt-4.1-mini") -> dict[str, Any]:
+def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provider: str = "none", model: str | None = None) -> dict[str, Any]:
     if not isinstance(phase05.get("dimensions"), list):
         raise ValueError("Input is not a Phase 05 assessment package: dimensions is required.")
     styles = load_good_example_styles(good_examples)
     style_dimensions = styles["dimensions"]
-    generated = _openai_narratives(phase05, styles, model) if provider == "openai" else None
+    settings = load_llm_settings(provider, model) if provider != "none" else None
+    generated = _llm_narratives(phase05, styles, settings) if settings else None
     generated_dimensions = {item.get("dimension_id"): item for item in (generated or {}).get("dimensions", [])}
     dimensions = []
     for dimension in phase05["dimensions"]:
@@ -136,8 +133,8 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
         "assessment_id": assessment_id(phase05),
         "document_id": phase05.get("document_id"),
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "summary_provider": provider,
-        "summary_model": model if provider == "openai" else None,
+        "summary_provider": settings.provider if settings else "none",
+        "summary_model": settings.model if settings else None,
         "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "criterion_snapshots": source_snapshots,
                               "criterion_snapshot_digests": {key: snapshot_digest(value) for key, value in source_snapshots.items()}},
         "good_examples_reference": {"knowledge_base": styles["knowledge_base"], "rules": styles["rules"], "overall_example": styles["overall_example"]},

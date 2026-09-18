@@ -4,5 +4,11 @@
   "min_section_heading_chars": 3,
   "embedding_provider": "none",
   "embedding_model": "all-MiniLM-L6-v2",
-  "embedding_dimensions": 256
+  "embedding_dimensions": 256,
+  "llm": {
+    "provider": "huggingface",
+    "model_env": "IOP_LLM_MODEL",
+    "model_default": "Qwen/Qwen3-8B",
+    "load_in_4bit_env": "IOP_LLM_LOAD_IN_4BIT"
+  }
 }
