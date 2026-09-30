@@ -25,6 +25,7 @@
           <span>วิธีประเมิน LLM</span>
           <select id="provider" name="provider">
             <option value="huggingface">Qwen3-8B ผ่าน Hugging Face (GPU ในเครื่อง)</option>
+            <option value="ollama">Ollama ของบริษัท (LLM Host)</option>
             <option value="openai">OpenAI API</option>
             <option value="none">ไม่ใช้ LLM — สร้าง Phase 03/04 เท่านั้น</option>
           </select>
@@ -61,11 +62,13 @@
     provider.addEventListener('change', () => {
       const choices = {
         huggingface: ['Qwen/Qwen3-8B', 'โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง'],
+        ollama: ['', 'ใช้ IOP_LLM_BASE_URL ใน Container และกรอก model tag ที่ได้จาก /api/tags'],
         openai: ['gpt-4.1-mini', 'ใช้ OPENAI_API_KEY หรือ IOP_LLM_API_KEY ที่ตั้งไว้บนเครื่อง'],
         none: ['', 'ประมวลผล Phase 03/04 โดยไม่เรียก LLM'],
       };
       const [value, help] = choices[provider.value];
-      model.value = value; model.required = provider.value !== 'none'; model.disabled = provider.value === 'none';
+      model.value = value; model.placeholder = provider.value === 'ollama' ? 'เช่น qwen2.5:24b' : '';
+      model.required = provider.value !== 'none'; model.disabled = provider.value === 'none';
       modelField.classList.toggle('muted', provider.value === 'none'); providerHelp.textContent = help;
     });
     form.addEventListener('submit', async (event) => {

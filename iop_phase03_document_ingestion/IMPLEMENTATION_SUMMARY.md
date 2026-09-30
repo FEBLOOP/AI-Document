@@ -44,7 +44,7 @@
 1. อัปโหลดไฟล์ PDF
 2. รัน Phase 03 เพื่ออ่านข้อความและ OCR เมื่อจำเป็น
 3. รัน Phase 04 เพื่อสร้าง evidence chunks
-4. เลือก Qwen3-8B ผ่าน Hugging Face, OpenAI API หรือไม่ใช้ LLM
+4. เลือก Qwen3-8B ผ่าน Hugging Face, Ollama Host, OpenAI API หรือไม่ใช้ LLM
 5. ดูสถานะของงานแบบ polling
 6. ดาวน์โหลดผลลัพธ์ Phase 03, Phase 04 และ Phase 05 เป็น JSON
 

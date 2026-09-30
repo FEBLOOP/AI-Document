@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "input" / "uploads"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
 RUBRIC_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "iop_reference.json"
-LLM_PROVIDERS = {"none", "huggingface", "openai"}
+LLM_PROVIDERS = {"none", "huggingface", "ollama", "openai"}
 DEFAULT_MODELS = {"huggingface": "Qwen/Qwen3-8B", "openai": "gpt-4.1-mini"}
 # Keep the Qwen request context small enough for the local 8 GB RTX 4060.
 WEB_LLM_TOP_K = 2
@@ -129,6 +129,8 @@ async def create_job(
     if provider not in LLM_PROVIDERS:
         raise HTTPException(status_code=400, detail="ไม่รองรับ LLM provider นี้")
     model = model.strip() if model else None
+    if provider == "ollama" and not model:
+        raise HTTPException(status_code=400, detail="กรุณาระบุ Ollama model tag จาก /api/tags")
     if provider != "none" and not model:
         model = DEFAULT_MODELS[provider]
     INPUT_DIR.mkdir(parents=True, exist_ok=True)
