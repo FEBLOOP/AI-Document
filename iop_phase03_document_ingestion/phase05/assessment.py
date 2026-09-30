@@ -17,7 +17,7 @@ def review_packet(criterion: dict[str, Any], evidence: list[dict[str, Any]]) -> 
 def assess_with_llm(packet: dict[str, Any], settings: LLMSettings) -> dict[str, Any]:
     prompt = json.dumps({"scoring_guide": SCORING_GUIDE, **packet}, ensure_ascii=False)
     assessment = complete_json(settings, [
-        {"role": "system", "content": "You are a careful Thai IOP assessor. Return only JSON with score (integer 1-5), confidence (0-1), rationale_th, evidence_chunk_ids, strengths, missing_points."},
+        {"role": "system", "content": "You are a careful Thai IOP assessor. Return only one compact, valid JSON object with score (integer 1-5), confidence (0-1), rationale_th, evidence_chunk_ids, strengths, missing_points. No Markdown and no text outside JSON. Keep rationale_th to one Thai sentence of at most 180 characters. evidence_chunk_ids must contain at most 2 supplied IDs. strengths and missing_points must each contain at most 2 short phrases of at most 80 characters. Do not repeat the supplied evidence."},
         {"role": "user", "content": prompt},
     ])
     if not isinstance(assessment.get("score"), int) or not 1 <= assessment["score"] <= 5:

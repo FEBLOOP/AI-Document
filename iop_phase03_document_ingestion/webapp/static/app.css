@@ -1,0 +1,14 @@
+:root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; background: #0b1020; color: #edf3ff; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 15% 0%, #243d7a 0, transparent 35%), #0b1020; }
+.shell { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 72px 0; }
+.eyebrow { color: #81a7ff; font-size: .75rem; font-weight: 700; letter-spacing: .16em; }
+h1 { font-size: clamp(2rem, 5vw, 3.35rem); margin: 8px 0 14px; line-height: 1.08; }
+.lead { color: #b8c4dd; max-width: 660px; line-height: 1.7; }
+.panel { background: rgba(22, 31, 57, .88); border: 1px solid #30446e; border-radius: 20px; padding: 26px; margin-top: 28px; box-shadow: 0 18px 45px #03071466; }
+.dropzone { display: grid; min-height: 150px; place-content: center; gap: 9px; text-align: center; border: 1.5px dashed #6687cb; border-radius: 14px; cursor: pointer; background: #101a32; }
+.dropzone input { display: none; }.drop-title { font-size: 1.1rem; font-weight: 700; }.dropzone span:last-child { color: #a8b5cd; font-size: .9rem; }
+.field { display: grid; gap: 7px; margin-top: 18px; color: #dfe8fa; font-size: .93rem; }.field select, .field input { width: 100%; border: 1px solid #47679c; border-radius: 9px; padding: 11px; background: #101a32; color: #edf3ff; font: inherit; }.field small { color: #9ba9c2; }.field.muted { opacity: .5; }
+button { width: 100%; border: 0; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700; color: #071124; background: linear-gradient(90deg, #85d7ff, #91a9ff); cursor: pointer; } button:disabled { opacity: .6; cursor: wait; }
+.hidden { display: none; }.status-top { display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; color: #a9c1ff; }.bar { height: 10px; background: #0b1225; border-radius: 99px; overflow: hidden; margin: 14px 0; }.bar i { display: block; height: 100%; width: 0; transition: width .3s; background: linear-gradient(90deg, #79d8ff, #9b9cff); }.status p { color: #c5d0e7; }
+dl { display: flex; gap: 25px; padding-top: 16px; border-top: 1px solid #30446e; } dt { color: #8fa1c2; font-size: .8rem; } dd { margin: 4px 0; font-weight: 700; }.downloads { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 18px; }.downloads a { color: #b5ecff; border: 1px solid #47679c; border-radius: 8px; padding: 9px 11px; text-decoration: none; font-size: .9rem; }

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IOP Assessment</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">IOP · DOCUMENT INTELLIGENCE</p>
+      <h1>ประเมินเอกสารด้วย Qwen3-8B</h1>
+      <p class="lead">อัปโหลด PDF เพื่อสกัดหลักฐาน จัดกลุ่มตามเกณฑ์ IOP และเลือกให้ Qwen ประเมินผลได้ในขั้นตอนเดียว</p>
+    </header>
+
+    <section class="panel">
+      <form id="upload-form">
+        <label class="dropzone" for="pdf">
+          <input id="pdf" name="file" type="file" accept="application/pdf" required>
+          <span class="drop-title">เลือกไฟล์ PDF</span>
+          <span id="file-name">รองรับเอกสารบริษัทภาษาไทยและอังกฤษ</span>
+        </label>
+        <label class="field" for="provider">
+          <span>วิธีประเมิน LLM</span>
+          <select id="provider" name="provider">
+            <option value="huggingface">Qwen3-8B ผ่าน Hugging Face (GPU ในเครื่อง)</option>
+            <option value="openai">OpenAI API</option>
+            <option value="none">ไม่ใช้ LLM — สร้าง Phase 03/04 เท่านั้น</option>
+          </select>
+        </label>
+        <label id="model-field" class="field" for="model">
+          <span>โมเดล</span>
+          <input id="model" name="model" value="Qwen/Qwen3-8B" required>
+          <small id="provider-help">โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง</small>
+        </label>
+        <button id="submit" type="submit">เริ่มวิเคราะห์เอกสาร</button>
+      </form>
+    </section>
+
+    <section id="job" class="panel status hidden" aria-live="polite">
+      <div class="status-top"><span id="stage">กำลังเตรียมงาน</span><strong id="percent">0%</strong></div>
+      <div class="bar"><i id="bar-fill"></i></div>
+      <p id="message"></p>
+      <dl id="metadata" class="hidden"></dl>
+      <div id="downloads" class="downloads hidden"></div>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#upload-form');
+    const fileInput = document.querySelector('#pdf');
+    const fileName = document.querySelector('#file-name');
+    const button = document.querySelector('#submit');
+    const provider = document.querySelector('#provider');
+    const model = document.querySelector('#model');
+    const modelField = document.querySelector('#model-field');
+    const providerHelp = document.querySelector('#provider-help');
+    const jobPanel = document.querySelector('#job');
+    let timer;
+    fileInput.addEventListener('change', () => fileName.textContent = fileInput.files[0]?.name || 'รองรับเอกสารบริษัทภาษาไทยและอังกฤษ');
+    provider.addEventListener('change', () => {
+      const choices = {
+        huggingface: ['Qwen/Qwen3-8B', 'โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง'],
+        openai: ['gpt-4.1-mini', 'ใช้ OPENAI_API_KEY หรือ IOP_LLM_API_KEY ที่ตั้งไว้บนเครื่อง'],
+        none: ['', 'ประมวลผล Phase 03/04 โดยไม่เรียก LLM'],
+      };
+      const [value, help] = choices[provider.value];
+      model.value = value; model.required = provider.value !== 'none'; model.disabled = provider.value === 'none';
+      modelField.classList.toggle('muted', provider.value === 'none'); providerHelp.textContent = help;
+    });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      button.textContent = 'กำลังอัปโหลด…';
+      const response = await fetch('/api/jobs', { method: 'POST', body: new FormData(form) });
+      const result = await response.json();
+      if (!response.ok) { alert(result.detail || 'อัปโหลดไม่สำเร็จ'); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร'; return; }
+      jobPanel.classList.remove('hidden');
+      timer = setInterval(() => poll(result.id), 1500);
+      poll(result.id);
+    });
+    async function poll(id) {
+      const job = await (await fetch(`/api/jobs/${id}`)).json();
+      document.querySelector('#stage').textContent = job.stage;
+      document.querySelector('#message').textContent = job.message;
+      document.querySelector('#percent').textContent = `${job.progress}%`;
+      document.querySelector('#bar-fill').style.width = `${job.progress}%`;
+      if (job.status === 'completed') {
+        clearInterval(timer); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร';
+        const meta = document.querySelector('#metadata');
+        meta.innerHTML = `<div><dt>Document ID</dt><dd>${job.document_id}</dd></div><div><dt>จำนวนหน้า</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>`;
+        meta.classList.remove('hidden');
+        const names = ['phase03', 'phase04', ...(job.provider !== 'none' ? ['phase05'] : [])];
+        const downloads = document.querySelector('#downloads');
+        downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">ดาวน์โหลด ${name.toUpperCase()} JSON</a>`).join('');
+        downloads.classList.remove('hidden');
+      }
+      if (job.status === 'failed') { clearInterval(timer); button.disabled = false; button.textContent = 'ลองอีกครั้ง'; }
+    }
+  </script>
+</body>
+</html>

@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from typing import Any
 
 from .config import LLMSettings
+
+# Must be set before PyTorch is imported. It prevents CUDA allocator
+# fragmentation during repeated Phase 05 generations on an 8 GB RTX 4060.
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 
 def complete_json(settings: LLMSettings, messages: list[dict[str, str]]) -> dict[str, Any]:
@@ -68,6 +73,7 @@ def _load_huggingface_model(model_id: str, load_in_4bit: bool) -> tuple[Any, Any
     if load_in_4bit:
         model_options["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=torch.float16,
         )
     model = AutoModelForCausalLM.from_pretrained(model_id, **model_options)

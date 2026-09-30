@@ -9,7 +9,7 @@ def test_llm_defaults_to_qwen3_8b(monkeypatch):
     settings = load_llm_settings()
     assert settings.provider == "huggingface"
     assert settings.model == DEFAULT_LLM_MODEL == "Qwen/Qwen3-8B"
-    assert settings.max_new_tokens == 2048
+    assert settings.max_new_tokens == 512
     assert settings.load_in_4bit is True
 
 

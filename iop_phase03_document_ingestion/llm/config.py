@@ -39,7 +39,9 @@ def load_llm_settings(provider: str | None = None, model: str | None = None) -> 
     if not api_key and selected_provider == "openai":
         api_key = os.getenv("OPENAI_API_KEY")
     try:
-        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "2048"))
+        # Phase 05 requires a small structured object. 512 tokens leaves room
+        # for Qwen3-8B's KV cache on 8 GB GPUs while remaining ample for JSON.
+        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "512"))
     except ValueError as exc:
         raise ValueError("IOP_LLM_MAX_NEW_TOKENS must be an integer.") from exc
     if max_new_tokens < 1:
