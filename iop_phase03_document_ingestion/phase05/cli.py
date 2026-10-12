@@ -8,7 +8,7 @@ from pathlib import Path
 from . import SCHEMA_VERSION
 from llm import load_llm_settings
 
-from .assessment import assess_with_llm, review_packet
+from .assessment import assess_dimension_with_llm, review_packet
 from .retrieval import evidence_item, retrieve
 from .rubric import load_criteria
 
@@ -25,14 +25,60 @@ def main() -> None:
     phase04 = json.loads(Path(args.phase04).read_text(encoding="utf-8"))
     rubric = json.loads(Path(args.rubric).read_text(encoding="utf-8"))
     settings = load_llm_settings(args.provider, args.model) if args.provider != "none" else None
+    criteria = load_criteria(rubric)
+    grouped_criteria = defaultdict(list)
+    for criterion in criteria:
+        grouped_criteria[criterion["dimension_id"]].append(criterion)
+
     results = []
-    for criterion in load_criteria(rubric):
-        query = " ".join([criterion["criterion"], *criterion["assessment_points"], *criterion["supporting_documents"]])
-        evidence = [evidence_item(hit) for hit in retrieve(phase04["chunks"], query, args.top_k)]
-        packet = review_packet(criterion, evidence)
-        assessment = assess_with_llm(packet, settings) if settings else None
-        results.append({"criterion": criterion, "evidence": evidence, "assessment": assessment,
-                        "status": "assessed" if assessment else "ready_for_human_or_llm_review"})
+    total_dimensions = len(grouped_criteria)
+    for dimension_index, (dimension_id, dimension_criteria) in enumerate(
+        grouped_criteria.items(),
+        start=1,
+    ):
+        print(
+            f"[{dimension_index}/{total_dimensions}] Preparing {dimension_id} "
+            f"({len(dimension_criteria)} criteria)...",
+            flush=True,
+        )
+
+        dimension_items = []
+        packets = []
+        for criterion in dimension_criteria:
+            query = " ".join(
+                [
+                    criterion["criterion"],
+                    *criterion["assessment_points"],
+                    *criterion["supporting_documents"],
+                ]
+            )
+            evidence = [
+                evidence_item(hit)
+                for hit in retrieve(phase04["chunks"], query, args.top_k)
+            ]
+            packet = review_packet(criterion, evidence)
+            dimension_items.append({"criterion": criterion, "evidence": evidence})
+            packets.append(packet)
+
+        if settings:
+            print(
+                f"[{dimension_index}/{total_dimensions}] Calling LLM for {dimension_id}...",
+                flush=True,
+            )
+            assessments = assess_dimension_with_llm(packets, settings)
+            for item, assessment in zip(dimension_items, assessments):
+                item["assessment"] = assessment
+                item["status"] = "assessed"
+            print(
+                f"[{dimension_index}/{total_dimensions}] {dimension_id} completed.",
+                flush=True,
+            )
+        else:
+            for item in dimension_items:
+                item["assessment"] = None
+                item["status"] = "ready_for_human_or_llm_review"
+
+        results.extend(dimension_items)
     by_dimension = defaultdict(list)
     for result in results: by_dimension[result["criterion"]["dimension_id"]].append(result)
     output = {"schema_version": SCHEMA_VERSION, "document_id": phase04["document_id"], "created_at": datetime.now(timezone.utc).isoformat(),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -64,7 +65,11 @@ def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | No
 
         phase05_path: Path | None = None
         if provider != "none":
-            provider_name = "Qwen3-8B" if provider == "huggingface" else "OpenAI API"
+            provider_name = {
+                "huggingface": "Qwen3-8B ในเครื่อง",
+                "ollama": "Ollama",
+                "openai": "OpenAI API",
+            }[provider]
             _update_job(job_id, stage="phase05", message=f"{provider_name} กำลังประเมินตามเกณฑ์ IOP", progress=65)
             phase05_path = OUTPUT_DIR / f"{phase03['document_id']}_phase05_assessment.json"
             command = [
@@ -77,15 +82,47 @@ def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | No
             ]
             if model:
                 command.extend(["--model", model])
-            subprocess.run(
+            process = subprocess.Popen(
                 command,
                 cwd=PROJECT_ROOT,
-                check=True,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 text=True,
                 encoding="utf-8",
+                errors="replace",
                 env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": os.getenv("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")},
             )
+            phase05_log = []
+            assert process.stdout is not None
+            for line in process.stdout:
+                line = line.strip()
+                if not line:
+                    continue
+                phase05_log.append(line)
+                match = re.match(r"^\[(\d+)/(\d+)\]\s+(.+)$", line)
+                if match:
+                    dimension_index = int(match.group(1))
+                    total_dimensions = int(match.group(2))
+                    detail = match.group(3)
+                    completed_dimensions = (
+                        dimension_index
+                        if detail.endswith("completed.")
+                        else dimension_index - 1
+                    )
+                    progress = 65 + round(
+                        29 * completed_dimensions / total_dimensions
+                    )
+                    _update_job(
+                        job_id,
+                        message=f"{provider_name}: {detail}",
+                        progress=progress,
+                    )
+            return_code = process.wait()
+            if return_code != 0:
+                detail = "\n".join(phase05_log[-50:])
+                raise RuntimeError(
+                    detail or f"Phase 05 exited with status {return_code}."
+                )
 
         paths = {"phase03": str(phase03_path), "phase04": str(phase04_path)}
         if phase05_path:
