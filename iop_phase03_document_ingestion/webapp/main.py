@@ -104,9 +104,10 @@ def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | No
                     dimension_index = int(match.group(1))
                     total_dimensions = int(match.group(2))
                     detail = match.group(3)
+                    normalized_detail = detail.lower()
                     completed_dimensions = (
                         dimension_index
-                        if detail.endswith("completed.")
+                        if normalized_detail.startswith(("completed ", "skipped "))
                         else dimension_index - 1
                     )
                     progress = 65 + round(

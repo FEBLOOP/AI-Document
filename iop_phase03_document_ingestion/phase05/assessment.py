@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+from collections.abc import Callable
 from typing import Any
 
 from llm import LLMSettings, complete_json
@@ -8,10 +9,35 @@ from llm import LLMSettings, complete_json
 SCORING_GUIDE = {"1": "แทบไม่มีหลักฐาน", "2": "มีบางส่วน", "3": "มีส่วนใหญ่", "4": "ครบถ้วน", "5": "ครบถ้วนและเป็นต้นแบบ"}
 
 
-def review_packet(criterion: dict[str, Any], evidence: list[dict[str, Any]]) -> dict[str, Any]:
-    return {"criterion": criterion, "evidence": evidence,
-            "instructions": "ใช้เฉพาะหลักฐานที่ให้มา ห้ามแต่งข้อมูลหรืออ้างหน้า/บล็อกที่ไม่มีใน evidence. "
-                            "คะแนน 1-5 ตาม scoring_guide และต้องระบุ evidence_chunk_ids, strengths, missing_points."}
+def review_packet(
+    criterion: dict[str, Any],
+    evidence: list[dict[str, Any]],
+    max_evidence_chars: int = 800,
+) -> dict[str, Any]:
+    """Build a compact prompt packet while keeping full evidence in the output."""
+    compact_evidence = []
+    for item in evidence:
+        text = str(item.get("text", ""))
+        if len(text) > max_evidence_chars:
+            text = text[:max_evidence_chars].rstrip() + "…"
+        compact_evidence.append(
+            {
+                "chunk_id": item.get("chunk_id"),
+                "relevance_score": item.get("relevance_score"),
+                "text": text,
+                "section": item.get("section"),
+                "page_start": item.get("page_start"),
+                "page_end": item.get("page_end"),
+            }
+        )
+    return {
+        "criterion": criterion,
+        "evidence": compact_evidence,
+        "instructions": (
+            "ใช้เฉพาะหลักฐานที่ให้มา ห้ามแต่งข้อมูลหรืออ้างหน้า/บล็อกที่ไม่มีใน evidence. "
+            "คะแนน 1-5 ตาม scoring_guide และต้องระบุ evidence_chunk_ids, strengths, missing_points."
+        ),
+    }
 
 
 def assess_with_llm(packet: dict[str, Any], settings: LLMSettings) -> dict[str, Any]:
@@ -29,8 +55,34 @@ def assess_with_llm(packet: dict[str, Any], settings: LLMSettings) -> dict[str, 
 def assess_dimension_with_llm(
     packets: list[dict[str, Any]],
     settings: LLMSettings,
+    max_attempts: int = 1,
+    on_retry: Callable[[int, Exception], None] | None = None,
 ) -> list[dict[str, Any]]:
-    """Assess every criterion in one dimension with a single LLM request."""
+    """Assess a mini-batch and retry malformed or incomplete JSON responses."""
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be at least 1.")
+
+    last_error: ValueError | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return _assess_dimension_once(packets, settings)
+        except ValueError as exc:
+            last_error = exc
+            if attempt == max_attempts:
+                break
+            if on_retry:
+                on_retry(attempt + 1, exc)
+
+    raise ValueError(
+        f"LLM returned invalid assessment JSON after {max_attempts} attempts: "
+        f"{last_error}"
+    ) from last_error
+
+
+def _assess_dimension_once(
+    packets: list[dict[str, Any]],
+    settings: LLMSettings,
+) -> list[dict[str, Any]]:
     prompt = json.dumps(
         {
             "scoring_guide": SCORING_GUIDE,
