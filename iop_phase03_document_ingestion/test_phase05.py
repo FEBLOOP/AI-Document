@@ -81,6 +81,24 @@ def test_dimension_assessment_retries_incomplete_json(monkeypatch):
     assert result[0]["criterion_id"] == "1.1.1"
 
 
+def test_dimension_error_shows_raw_response_shape(monkeypatch):
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {"criteria_assessment": []},
+    )
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    try:
+        assess_dimension_with_llm(
+            [{"criterion": {"criterion_id": "1.1.1"}, "evidence": []}],
+            settings,
+        )
+    except ValueError as error:
+        assert '"criteria_assessment": []' in str(error)
+    else:
+        raise AssertionError("Expected invalid response shape to fail")
+
+
 def test_checkpoint_can_resume_assessed_criteria(tmp_path):
     settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
     phase04 = {"document_id": "DOC_TEST"}

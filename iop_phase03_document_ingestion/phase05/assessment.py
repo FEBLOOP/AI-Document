@@ -118,7 +118,11 @@ def _assess_dimension_once(
 
     assessments = result.get("assessments")
     if not isinstance(assessments, list):
-        raise ValueError("LLM did not return an assessments list.")
+        preview = json.dumps(result, ensure_ascii=False)[:2000]
+        raise ValueError(
+            "LLM did not return an assessments list. "
+            f"Raw response: {preview}"
+        )
 
     expected_ids = {
         str(packet["criterion"]["criterion_id"])

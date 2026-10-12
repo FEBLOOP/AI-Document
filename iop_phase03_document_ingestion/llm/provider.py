@@ -9,6 +9,8 @@ from typing import Any
 
 from .config import LLMSettings
 
+RESPONSE_PREVIEW_CHARS = 2000
+
 # Must be set before PyTorch is imported. It prevents CUDA allocator
 # fragmentation during repeated Phase 05 generations on an 8 GB RTX 4060.
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
@@ -31,22 +33,26 @@ def _openai_compatible_complete_json(settings: LLMSettings, messages: list[dict[
     # Ollama exposes an OpenAI-compatible API at /v1. Its API key is ignored,
     # but the SDK requires a non-empty value.
     client = OpenAI(api_key=settings.api_key or "ollama", base_url=settings.base_url)
+    request_options: dict[str, Any] = {}
+    if settings.provider == "ollama":
+        # Qwen3 enables thinking by default on many Ollama installations.
+        # The OpenAI-compatible endpoint maps reasoning_effort="none" to
+        # think=false for boolean-thinking models. Bound generated tokens too,
+        # otherwise IOP_LLM_MAX_NEW_TOKENS only affects direct Hugging Face use.
+        request_options.update(
+            max_tokens=settings.max_new_tokens,
+            reasoning_effort="none",
+        )
+
     response = client.chat.completions.create(
         model=settings.model,
         temperature=0,
         response_format={"type": "json_object"},
         messages=messages,
+        **request_options,
     )
     content = response.choices[0].message.content
-    if not content:
-        raise ValueError("LLM returned an empty response.")
-    try:
-        parsed = json.loads(content)
-    except json.JSONDecodeError as exc:
-        raise ValueError("LLM did not return valid JSON.") from exc
-    if not isinstance(parsed, dict):
-        raise ValueError("LLM response must be a JSON object.")
-    return parsed
+    return _parse_json_object(content or "")
 
 
 @lru_cache(maxsize=1)
@@ -110,7 +116,13 @@ def _parse_json_object(content: str) -> dict[str, Any]:
     try:
         parsed = json.loads(content)
     except json.JSONDecodeError as exc:
-        raise ValueError("LLM did not return valid JSON.") from exc
+        preview = json.dumps(
+            content[:RESPONSE_PREVIEW_CHARS],
+            ensure_ascii=False,
+        )
+        raise ValueError(
+            f"LLM did not return valid JSON. Raw response: {preview}"
+        ) from exc
     if not isinstance(parsed, dict):
         raise ValueError("LLM response must be a JSON object.")
     return parsed
