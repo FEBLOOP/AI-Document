@@ -18,3 +18,17 @@ python -m phase05.cli --phase04 ".\data\output\DOC_DD3C35531469_phase04.json" --
 ```
 
 The result contains per-criterion candidates, score, confidence, cited chunk IDs, strengths and missing points. Dimension roll-ups and narrative summaries are intentionally left to Phase 06.
+
+## Assess selected dimensions
+
+Use `--dimensions` with comma-separated dimension IDs to process only the required sections. This reduces retrieval, LLM calls, and processing time. Omitting the option keeps the existing D1-D8 behavior.
+
+```powershell
+python -m phase05.cli `
+  --phase04 ".\data\output\DOC_DD3C35531469_phase04.json" `
+  --rubric "..\data\knowledge_base\iop_reference.json" `
+  --output ".\data\output\DOC_DD3C35531469_phase05_D1-D5.json" `
+  --provider ollama `
+  --model qwen3:8b `
+  --dimensions D1,D5
+```

@@ -35,6 +35,24 @@
           <input id="model" name="model" value="Qwen/Qwen3-8B" required>
           <small id="provider-help">โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง</small>
         </label>
+        <fieldset id="dimensions-field" class="dimensions-field">
+          <legend>มิติที่ต้องการประเมิน</legend>
+          <div class="dimension-actions">
+            <button id="select-all-dimensions" type="button">เลือกทั้งหมด</button>
+            <button id="clear-dimensions" type="button">ล้างการเลือก</button>
+          </div>
+          <div class="dimension-grid">
+            <label><input type="checkbox" name="dimensions" value="D1" checked><span>D1</span></label>
+            <label><input type="checkbox" name="dimensions" value="D2" checked><span>D2</span></label>
+            <label><input type="checkbox" name="dimensions" value="D3" checked><span>D3</span></label>
+            <label><input type="checkbox" name="dimensions" value="D4" checked><span>D4</span></label>
+            <label><input type="checkbox" name="dimensions" value="D5" checked><span>D5</span></label>
+            <label><input type="checkbox" name="dimensions" value="D6" checked><span>D6</span></label>
+            <label><input type="checkbox" name="dimensions" value="D7" checked><span>D7</span></label>
+            <label><input type="checkbox" name="dimensions" value="D8" checked><span>D8</span></label>
+          </div>
+          <small>เลือกเฉพาะมิติที่ต้องการเพื่อลดเวลาเรียก LLM เช่น D1 และ D5</small>
+        </fieldset>
         <button id="submit" type="submit">เริ่มวิเคราะห์เอกสาร</button>
       </form>
     </section>
@@ -56,6 +74,8 @@
     const model = document.querySelector('#model');
     const modelField = document.querySelector('#model-field');
     const providerHelp = document.querySelector('#provider-help');
+    const dimensionsField = document.querySelector('#dimensions-field');
+    const dimensionInputs = [...document.querySelectorAll('input[name="dimensions"]')];
     const jobPanel = document.querySelector('#job');
     let timer;
     fileInput.addEventListener('change', () => fileName.textContent = fileInput.files[0]?.name || 'รองรับเอกสารบริษัทภาษาไทยและอังกฤษ');
@@ -70,9 +90,16 @@
       model.value = value; model.placeholder = provider.value === 'ollama' ? 'เช่น qwen2.5:24b' : '';
       model.required = provider.value !== 'none'; model.disabled = provider.value === 'none';
       modelField.classList.toggle('muted', provider.value === 'none'); providerHelp.textContent = help;
+      dimensionsField.classList.toggle('muted', provider.value === 'none');
     });
+    document.querySelector('#select-all-dimensions').addEventListener('click', () => dimensionInputs.forEach(input => input.checked = true));
+    document.querySelector('#clear-dimensions').addEventListener('click', () => dimensionInputs.forEach(input => input.checked = false));
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (provider.value !== 'none' && !dimensionInputs.some(input => input.checked)) {
+        alert('กรุณาเลือกอย่างน้อยหนึ่งมิติ');
+        return;
+      }
       button.disabled = true;
       button.textContent = 'กำลังอัปโหลด…';
       const response = await fetch('/api/jobs', { method: 'POST', body: new FormData(form) });

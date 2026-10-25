@@ -1,0 +1,49 @@
+from pypdf import PdfReader
+
+from phase07.report import build_pdf_report
+
+
+def test_build_pdf_report_creates_readable_pdf(tmp_path):
+    phase06 = {
+        "document_id": "DOC_TEST",
+        "summary_provider": "none",
+        "summary_model": None,
+        "overall_summary": "สรุปผลการประเมินภาพรวม",
+        "dimension_summaries": [
+            {
+                "dimension_id": "D1",
+                "dimension_name": "การนำองค์กร",
+                "summary": "มีหลักฐานสนับสนุนการดำเนินงาน",
+                "strengths": ["มีนโยบายชัดเจน"],
+                "areas_for_improvement": ["ควรเพิ่มตัวชี้วัด"],
+                "criterion_summaries": [
+                    {
+                        "criterion_id": "1.1.1",
+                        "criterion": "กำหนดทิศทางองค์กร",
+                        "status": "assessed",
+                        "score": 3,
+                        "confidence": 0.8,
+                        "summary": "พบหลักฐานบางส่วน",
+                        "strengths": ["มีเอกสารนโยบาย"],
+                        "areas_for_improvement": ["ยังไม่มี KPI"],
+                        "citations": [
+                            {
+                                "chunk_id": "C1",
+                                "page_start": 2,
+                                "page_end": 2,
+                                "text": "ข้อความหลักฐาน",
+                            }
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    output = tmp_path / "report.pdf"
+
+    build_pdf_report(phase06, output)
+
+    reader = PdfReader(str(output))
+    assert output.read_bytes().startswith(b"%PDF")
+    assert len(reader.pages) >= 2
+    assert reader.metadata.title == "IOP Assessment Report - DOC_TEST"

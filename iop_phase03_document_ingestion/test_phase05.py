@@ -1,6 +1,6 @@
 from llm.config import LLMSettings
 from phase05.assessment import assess_dimension_with_llm, review_packet
-from phase05.cli import _build_output, _resume_items, _write_output_atomic
+from phase05.cli import _build_output, _parse_dimensions, _resume_items, _write_output_atomic
 from phase05.retrieval import retrieve
 from phase05.rubric import load_criteria
 
@@ -13,6 +13,11 @@ def test_retrieval_returns_matching_chunk():
 def test_iop_hierarchy_is_flattened():
     rubric = {"dimensions": [{"id": "D1", "components": [{"id": "1.1", "criteria": [{"id": "1.1.1", "description": "x"}]}]}]}
     assert load_criteria(rubric)[0]["criterion_id"] == "1.1.1"
+
+
+def test_dimension_selection_is_normalized_and_deduplicated():
+    assert _parse_dimensions("d5, D1, d5") == ["D5", "D1"]
+    assert _parse_dimensions(None) is None
 
 
 def test_dimension_assessment_uses_one_call_and_preserves_criterion_order(monkeypatch):

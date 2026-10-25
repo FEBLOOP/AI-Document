@@ -27,6 +27,7 @@ OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
 RUBRIC_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "iop_reference.json"
 LLM_PROVIDERS = {"none", "huggingface", "ollama", "openai"}
 DEFAULT_MODELS = {"huggingface": "Qwen/Qwen3-8B", "openai": "gpt-4.1-mini"}
+IOP_DIMENSIONS = tuple(f"D{index}" for index in range(1, 9))
 # Keep the Qwen request context small enough for the local 8 GB RTX 4060.
 WEB_LLM_TOP_K = 2
 JOBS: dict[str, dict[str, Any]] = {}
@@ -53,7 +54,13 @@ def _job_payload(job_id: str) -> dict[str, Any]:
         return {key: value for key, value in job.items() if key != "paths"}
 
 
-def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | None) -> None:
+def _run_pipeline(
+    job_id: str,
+    source_path: Path,
+    provider: str,
+    model: str | None,
+    dimensions: list[str],
+) -> None:
     try:
         _update_job(job_id, status="running", stage="phase03", message="กำลังอ่านข้อความจาก PDF และ OCR เมื่อจำเป็น", progress=20)
         phase03_path, phase03 = ingest_pdf(str(source_path), str(OUTPUT_DIR))
@@ -71,7 +78,12 @@ def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | No
                 "openai": "OpenAI API",
             }[provider]
             _update_job(job_id, stage="phase05", message=f"{provider_name} กำลังประเมินตามเกณฑ์ IOP", progress=65)
-            phase05_path = OUTPUT_DIR / f"{phase03['document_id']}_phase05_assessment.json"
+            dimension_suffix = (
+                ""
+                if dimensions == list(IOP_DIMENSIONS)
+                else "_" + "-".join(dimensions)
+            )
+            phase05_path = OUTPUT_DIR / f"{phase03['document_id']}_phase05{dimension_suffix}_assessment.json"
             command = [
                 sys.executable, "-m", "phase05.cli",
                 "--phase04", str(phase04_path),
@@ -79,6 +91,7 @@ def _run_pipeline(job_id: str, source_path: Path, provider: str, model: str | No
                 "--output", str(phase05_path),
                 "--provider", provider,
                 "--top-k", str(WEB_LLM_TOP_K),
+                "--dimensions", ",".join(dimensions),
             ]
             if model:
                 command.extend(["--model", model])
@@ -160,6 +173,7 @@ async def create_job(
     file: UploadFile = File(...),
     provider: str = Form("huggingface"),
     model: str | None = Form(None),
+    dimensions: list[str] | None = Form(None),
 ) -> dict[str, str]:
     if not file.filename or Path(file.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=400, detail="รองรับเฉพาะไฟล์ PDF")
@@ -171,6 +185,16 @@ async def create_job(
         raise HTTPException(status_code=400, detail="กรุณาระบุ Ollama model tag จาก /api/tags")
     if provider != "none" and not model:
         model = DEFAULT_MODELS[provider]
+    selected_dimensions = []
+    for dimension_id in dimensions or []:
+        normalized = dimension_id.strip().upper()
+        if normalized in IOP_DIMENSIONS and normalized not in selected_dimensions:
+            selected_dimensions.append(normalized)
+    selected_dimensions.sort(key=IOP_DIMENSIONS.index)
+    if provider != "none" and not selected_dimensions:
+        raise HTTPException(status_code=400, detail="กรุณาเลือกอย่างน้อยหนึ่งมิติ")
+    if not selected_dimensions:
+        selected_dimensions = list(IOP_DIMENSIONS)
     INPUT_DIR.mkdir(parents=True, exist_ok=True)
     job_id = uuid.uuid4().hex
     source_path = INPUT_DIR / f"{job_id}.pdf"
@@ -184,6 +208,7 @@ async def create_job(
             "source_name": Path(file.filename).name,
             "provider": provider,
             "model": model,
+            "dimensions": selected_dimensions,
             "status": "queued",
             "stage": "queued",
             "message": "รอเริ่มประมวลผล",
@@ -192,7 +217,14 @@ async def create_job(
             "updated_at": _now(),
             "paths": {},
         }
-    background_tasks.add_task(_run_pipeline, job_id, source_path, provider, model)
+    background_tasks.add_task(
+        _run_pipeline,
+        job_id,
+        source_path,
+        provider,
+        model,
+        selected_dimensions,
+    )
     return {"id": job_id}
 
 

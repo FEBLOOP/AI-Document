@@ -16,6 +16,17 @@ from .retrieval import evidence_item, retrieve
 from .rubric import load_criteria
 
 
+def _parse_dimensions(value: str | None) -> list[str] | None:
+    if not value:
+        return None
+    selected = []
+    for item in value.split(","):
+        dimension_id = item.strip().upper()
+        if dimension_id and dimension_id not in selected:
+            selected.append(dimension_id)
+    return selected or None
+
+
 def _build_output(
     phase04: dict[str, Any],
     settings: Any,
@@ -95,6 +106,7 @@ def main() -> None:
     parser.add_argument("--max-evidence-chars", type=int, default=800, help="Maximum prompt characters per evidence item")
     parser.add_argument("--retries", type=int, default=2, help="Retries for invalid or incomplete LLM JSON")
     parser.add_argument("--resume", action="store_true", help="Continue from assessed criteria in an existing output file")
+    parser.add_argument("--dimensions", help="Comma-separated dimensions to assess, for example D1,D5; defaults to all")
     args = parser.parse_args()
     if args.top_k < 1:
         parser.error("--top-k must be at least 1")
@@ -110,6 +122,28 @@ def main() -> None:
     settings = load_llm_settings(args.provider, args.model) if args.provider != "none" else None
     output_path = Path(args.output)
     criteria = load_criteria(rubric)
+    available_dimensions = list(dict.fromkeys(
+        str(criterion["dimension_id"]).upper() for criterion in criteria
+    ))
+    selected_dimensions = _parse_dimensions(args.dimensions) or available_dimensions
+    unknown_dimensions = [
+        dimension_id
+        for dimension_id in selected_dimensions
+        if dimension_id not in available_dimensions
+    ]
+    if unknown_dimensions:
+        parser.error(
+            "Unknown --dimensions: "
+            + ", ".join(unknown_dimensions)
+            + ". Available: "
+            + ", ".join(available_dimensions)
+        )
+    criteria = [
+        criterion
+        for criterion in criteria
+        if str(criterion["dimension_id"]).upper() in selected_dimensions
+    ]
+    print(f"Selected dimensions: {', '.join(selected_dimensions)}", flush=True)
     grouped_criteria = defaultdict(list)
     for criterion in criteria:
         grouped_criteria[criterion["dimension_id"]].append(criterion)
@@ -130,6 +164,7 @@ def main() -> None:
 
     created_at = resumed_created_at or datetime.now(timezone.utc).isoformat()
     run_config = {
+        "dimensions": selected_dimensions,
         "top_k": args.top_k,
         "batch_size": args.batch_size,
         "max_evidence_chars": args.max_evidence_chars,
