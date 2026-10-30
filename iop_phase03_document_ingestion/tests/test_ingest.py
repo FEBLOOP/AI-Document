@@ -21,3 +21,59 @@ def test_ocr_blocks_follow_tesseract_block_positions():
     blocks = build_ocr_blocks(data, 1)
     assert [block.text for block in blocks] == ["หัวข้อ", "Body text"]
     assert blocks[1].bbox == [10, 80, 85, 95]
+
+
+def test_ocr_blocks_finish_left_column_before_reading_right_column():
+    data = {
+        "text": ["ซ้ายบน", "ขวาบน", "ซ้ายล่าง", "ขวาล่าง"],
+        "conf": ["90"] * 4,
+        "left": [10, 210, 20, 220],
+        "top": [10, 10, 80, 80],
+        "width": [100, 100, 100, 100],
+        "height": [20] * 4,
+        "block_num": [1, 2, 3, 4],
+        "par_num": [1] * 4,
+        "line_num": [1] * 4,
+    }
+
+    blocks = build_ocr_blocks(data, 1)
+
+    assert [block.text for block in blocks] == [
+        "ซ้ายบน", "ซ้ายล่าง", "ขวาบน", "ขวาล่าง"
+    ]
+
+
+def test_ocr_merges_close_wrapped_lines_in_the_same_paragraph():
+    data = {
+        "text": ["นโยบายด้าน", "นวัตกรรม"],
+        "conf": ["90", "90"],
+        "left": [10, 10],
+        "top": [10, 34],
+        "width": [100, 80],
+        "height": [20, 20],
+        "block_num": [1, 1],
+        "par_num": [1, 1],
+        "line_num": [1, 2],
+    }
+
+    blocks = build_ocr_blocks(data, 1)
+
+    assert blocks[0].text == "นโยบายด้าน นวัตกรรม"
+
+
+def test_ocr_keeps_separate_boxes_apart_at_the_same_y_position():
+    data = {
+        "text": ["กล่องซ้าย", "กล่องขวา"],
+        "conf": ["90", "90"],
+        "left": [10, 210],
+        "top": [10, 10],
+        "width": [100, 100],
+        "height": [20, 20],
+        "block_num": [1, 2],
+        "par_num": [1, 1],
+        "line_num": [1, 1],
+    }
+
+    blocks = build_ocr_blocks(data, 1)
+
+    assert [block.text for block in blocks] == ["กล่องซ้าย", "กล่องขวา"]
