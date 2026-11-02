@@ -1,0 +1,30 @@
+{
+  "schema_version": "ai-document.phase05/v1",
+  "document_id": "DOC_TEST",
+  "created_at": "2026-01-01T00:00:00+00:00",
+  "updated_at": "2026-10-30T08:36:42.235499+00:00",
+  "complete": false,
+  "assessment_provider": "ollama",
+  "assessment_model": "qwen3:8b",
+  "run_config": {
+    "batch_size": 2
+  },
+  "dimensions": [
+    {
+      "dimension_id": "D1",
+      "criteria": [
+        {
+          "criterion": {
+            "dimension_id": "D1",
+            "criterion_id": "1.1.1"
+          },
+          "evidence": [],
+          "assessment": {
+            "score": 3
+          },
+          "status": "assessed"
+        }
+      ]
+    }
+  ]
+}

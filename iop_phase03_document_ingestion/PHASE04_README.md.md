@@ -27,13 +27,13 @@ All switches have CLI flags and environment-variable counterparts:
 
 ```powershell
 $env:PHASE04_EMBEDDING_PROVIDER = "hash"       # none (default), hash, sentence_transformers, openai
-$env:PHASE04_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+$env:PHASE04_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 $env:PHASE04_CHUNK_MAX_CHARS = "1400"
 $env:PHASE04_CHUNK_OVERLAP_BLOCKS = "1"
 python -m phase04.cli --input phase03.json --output phase04.json --embed
 ```
 
-`hash` is deterministic, dependency-free, and useful for end-to-end testing; it is not a semantic model. For local semantic embeddings install `pip install -r requirements-embeddings.txt` and use `sentence_transformers`. For OpenAI embeddings install `openai`, set `OPENAI_API_KEY`, and set `PHASE04_EMBEDDING_PROVIDER=openai`. Embeddings are omitted unless `--embed` is supplied.
+`hash` is deterministic, dependency-free, and useful for end-to-end testing; it is not a semantic model. For local semantic embeddings install `pip install -r requirements-embeddings.txt` and use `sentence_transformers`. The default multilingual model maps text to 384-dimensional vectors and supports semantic search across 50 languages. For OpenAI embeddings install `openai`, set `OPENAI_API_KEY`, and set `PHASE04_EMBEDDING_PROVIDER=openai`. Embeddings are omitted unless `--embed` is supplied.
 
 Outputs use schema `ai-document.phase04/v1`. Each chunk has `chunk_id`, `document_id`, normalized text, page range, source blocks (including page/bbox/confidence), section, metadata, and optional embedding. This is the intended evidence unit for Phase 05 retrieval: retrieve chunks by embedding/metadata, then cite `source_blocks`.
 

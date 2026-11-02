@@ -7,7 +7,8 @@ from dataclasses import dataclass
 
 
 DEFAULT_LLM_MODEL = "Qwen/Qwen3-8B"
-SUPPORTED_PROVIDERS = frozenset({"huggingface", "ollama", "openai"})
+DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-5"
+SUPPORTED_PROVIDERS = frozenset({"anthropic", "huggingface", "ollama", "openai"})
 
 
 @dataclass(frozen=True)
@@ -28,16 +29,25 @@ def load_llm_settings(provider: str | None = None, model: str | None = None) -> 
     if selected_provider not in SUPPORTED_PROVIDERS:
         raise ValueError(f"Unsupported IOP LLM provider: {selected_provider}. Expected one of: {', '.join(sorted(SUPPORTED_PROVIDERS))}.")
 
-    selected_model = (model or os.getenv("IOP_LLM_MODEL", DEFAULT_LLM_MODEL)).strip()
+    default_model = (
+        DEFAULT_ANTHROPIC_MODEL
+        if selected_provider == "anthropic"
+        else DEFAULT_LLM_MODEL
+    )
+    selected_model = (model or os.getenv("IOP_LLM_MODEL", default_model)).strip()
     if not selected_model:
         raise ValueError("IOP_LLM_MODEL must not be empty.")
 
     base_url = os.getenv("IOP_LLM_BASE_URL")
     if not base_url and selected_provider == "ollama":
         base_url = "http://localhost:11434/v1"
+    if not base_url and selected_provider == "anthropic":
+        base_url = os.getenv("ANTHROPIC_BASE_URL")
     api_key = os.getenv("IOP_LLM_API_KEY")
     if not api_key and selected_provider == "openai":
         api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key and selected_provider == "anthropic":
+        api_key = os.getenv("ANTHROPIC_API_KEY")
     try:
         # Phase 05 requires a small structured object. 512 tokens leaves room
         # for Qwen3-8B's KV cache on 8 GB GPUs while remaining ample for JSON.

@@ -453,3 +453,16 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
     if not reader.pages:
         raise RuntimeError("Generated PDF has no pages.")
     return target
+
+
+def build_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
+    """Build a PDF or DOCX report according to the output file extension."""
+    target = Path(output_path)
+    suffix = target.suffix.lower()
+    if suffix == ".pdf":
+        return build_pdf_report(phase06, target)
+    if suffix == ".docx":
+        from .docx_report import build_docx_report
+
+        return build_docx_report(phase06, target)
+    raise ValueError("Phase 07 output must use a .pdf or .docx extension.")

@@ -10,8 +10,8 @@
   <main class="shell">
     <header>
       <p class="eyebrow">IOP · DOCUMENT INTELLIGENCE</p>
-      <h1>ประเมินเอกสารด้วย Qwen3-8B</h1>
-      <p class="lead">อัปโหลด PDF เพื่อสกัดหลักฐาน จัดกลุ่มตามเกณฑ์ IOP และเลือกให้ Qwen ประเมินผลได้ในขั้นตอนเดียว</p>
+      <h1>ประเมินเอกสารด้วย AI</h1>
+      <p class="lead">อัปโหลด PDF เพื่อสกัดหลักฐาน จัดกลุ่มตามเกณฑ์ IOP และเลือกโมเดลสำหรับประเมินผลได้ในขั้นตอนเดียว</p>
     </header>
 
     <section class="panel">
@@ -27,6 +27,7 @@
             <option value="huggingface">Qwen3-8B ผ่าน Hugging Face (GPU ในเครื่อง)</option>
             <option value="ollama">Ollama ของบริษัท (LLM Host)</option>
             <option value="openai">OpenAI API</option>
+            <option value="anthropic">Claude API (Anthropic)</option>
             <option value="none">ไม่ใช้ LLM — สร้าง Phase 03/04 เท่านั้น</option>
           </select>
         </label>
@@ -53,6 +54,15 @@
           </div>
           <small>เลือกเฉพาะมิติที่ต้องการเพื่อลดเวลาเรียก LLM เช่น D1 และ D5</small>
         </fieldset>
+        <label id="report-format-field" class="field" for="report-format">
+          <span>รูปแบบรายงาน Phase 7</span>
+          <select id="report-format" name="report_format">
+            <option value="pdf">PDF</option>
+            <option value="docx">Word (DOCX)</option>
+            <option value="both">PDF และ Word (DOCX)</option>
+          </select>
+          <small>Phase 6 จะถูกสร้างอัตโนมัติก่อนจัดทำรายงาน</small>
+        </label>
         <button id="submit" type="submit">เริ่มวิเคราะห์เอกสาร</button>
       </form>
     </section>
@@ -75,6 +85,7 @@
     const modelField = document.querySelector('#model-field');
     const providerHelp = document.querySelector('#provider-help');
     const dimensionsField = document.querySelector('#dimensions-field');
+    const reportFormatField = document.querySelector('#report-format-field');
     const dimensionInputs = [...document.querySelectorAll('input[name="dimensions"]')];
     const jobPanel = document.querySelector('#job');
     let timer;
@@ -84,6 +95,7 @@
         huggingface: ['Qwen/Qwen3-8B', 'โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง'],
         ollama: ['', 'ใช้ IOP_LLM_BASE_URL ใน Container และกรอก model tag ที่ได้จาก /api/tags'],
         openai: ['gpt-4.1-mini', 'ใช้ OPENAI_API_KEY หรือ IOP_LLM_API_KEY ที่ตั้งไว้บนเครื่อง'],
+        anthropic: ['claude-sonnet-5', 'ใช้ ANTHROPIC_API_KEY หรือ IOP_LLM_API_KEY ที่ตั้งไว้บนเครื่อง'],
         none: ['', 'ประมวลผล Phase 03/04 โดยไม่เรียก LLM'],
       };
       const [value, help] = choices[provider.value];
@@ -91,6 +103,7 @@
       model.required = provider.value !== 'none'; model.disabled = provider.value === 'none';
       modelField.classList.toggle('muted', provider.value === 'none'); providerHelp.textContent = help;
       dimensionsField.classList.toggle('muted', provider.value === 'none');
+      reportFormatField.classList.toggle('muted', provider.value === 'none');
     });
     document.querySelector('#select-all-dimensions').addEventListener('click', () => dimensionInputs.forEach(input => input.checked = true));
     document.querySelector('#clear-dimensions').addEventListener('click', () => dimensionInputs.forEach(input => input.checked = false));
@@ -120,9 +133,19 @@
         const meta = document.querySelector('#metadata');
         meta.innerHTML = `<div><dt>Document ID</dt><dd>${job.document_id}</dd></div><div><dt>จำนวนหน้า</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>`;
         meta.classList.remove('hidden');
-        const names = ['phase03', 'phase04', ...(job.provider !== 'none' ? ['phase05'] : [])];
+        const names = ['phase03', 'phase04'];
+        if (job.provider !== 'none') {
+          names.push('phase05', 'phase06');
+          if (job.report_format === 'pdf' || job.report_format === 'both') names.push('report_pdf');
+          if (job.report_format === 'docx' || job.report_format === 'both') names.push('report_docx');
+        }
         const downloads = document.querySelector('#downloads');
-        downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">ดาวน์โหลด ${name.toUpperCase()} JSON</a>`).join('');
+        const labels = {
+          phase03: 'ดาวน์โหลด PHASE03 JSON', phase04: 'ดาวน์โหลด PHASE04 JSON',
+          phase05: 'ดาวน์โหลด PHASE05 JSON', phase06: 'ดาวน์โหลด PHASE06 JSON',
+          report_pdf: 'ดาวน์โหลดรายงาน PDF', report_docx: 'ดาวน์โหลดรายงาน Word',
+        };
+        downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">${labels[name]}</a>`).join('');
         downloads.classList.remove('hidden');
       }
       if (job.status === 'failed') { clearInterval(timer); button.disabled = false; button.textContent = 'ลองอีกครั้ง'; }

@@ -1,6 +1,7 @@
 from pypdf import PdfReader
+from docx import Document
 
-from phase07.report import build_pdf_report
+from phase07.report import build_pdf_report, build_report
 
 
 def test_build_pdf_report_creates_readable_pdf(tmp_path):
@@ -47,3 +48,40 @@ def test_build_pdf_report_creates_readable_pdf(tmp_path):
     assert output.read_bytes().startswith(b"%PDF")
     assert len(reader.pages) >= 2
     assert reader.metadata.title == "IOP Assessment Report - DOC_TEST"
+
+
+def test_build_report_creates_editable_docx(tmp_path):
+    phase06 = {
+        "document_id": "DOC_TEST",
+        "summary_provider": "none",
+        "summary_model": None,
+        "overall_summary": "สรุปผลการประเมินภาพรวม",
+        "dimension_summaries": [
+            {
+                "dimension_id": "D1",
+                "dimension_name": "การนำองค์กร",
+                "summary": "มีหลักฐานสนับสนุนการดำเนินงาน",
+                "strengths": ["มีนโยบายชัดเจน"],
+                "areas_for_improvement": ["ควรเพิ่มตัวชี้วัด"],
+                "criterion_summaries": [],
+            }
+        ],
+    }
+    output = tmp_path / "report.docx"
+
+    build_report(phase06, output)
+
+    assert output.read_bytes().startswith(b"PK")
+    document = Document(output)
+    rendered_text = "\n".join(paragraph.text for paragraph in document.paragraphs)
+    assert "รายงานผลการประเมิน IOP" in rendered_text
+    assert "สรุปผลการประเมินภาพรวม" in rendered_text
+
+
+def test_build_report_rejects_unknown_extension(tmp_path):
+    try:
+        build_report({"dimension_summaries": []}, tmp_path / "report.txt")
+    except ValueError as exc:
+        assert ".pdf or .docx" in str(exc)
+    else:
+        raise AssertionError("Expected an unsupported extension error")

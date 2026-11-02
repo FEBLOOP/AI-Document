@@ -19,17 +19,27 @@ from fastapi.staticfiles import StaticFiles
 from app.ingest import ingest_pdf
 from phase04.config import Settings
 from phase04.pipeline import build_phase04
+from phase06.summary import build_summary
+from phase06.validation import validate_summary_integrity
+from phase07.report import build_report
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "input" / "uploads"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
 RUBRIC_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "iop_reference.json"
-LLM_PROVIDERS = {"none", "huggingface", "ollama", "openai"}
-DEFAULT_MODELS = {"huggingface": "Qwen/Qwen3-8B", "openai": "gpt-4.1-mini"}
+GOOD_EXAMPLES_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "good_examples_kb.json"
+LLM_PROVIDERS = {"none", "anthropic", "huggingface", "ollama", "openai"}
+REPORT_FORMATS = {"pdf", "docx", "both"}
+DEFAULT_MODELS = {
+    "anthropic": "claude-sonnet-5",
+    "huggingface": "Qwen/Qwen3-8B",
+    "openai": "gpt-4.1-mini",
+}
 IOP_DIMENSIONS = tuple(f"D{index}" for index in range(1, 9))
 # Keep the Qwen request context small enough for the local 8 GB RTX 4060.
 WEB_LLM_TOP_K = 2
+WEB_SEMANTIC_WEIGHT = 0.7
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = Lock()
 
@@ -60,13 +70,23 @@ def _run_pipeline(
     provider: str,
     model: str | None,
     dimensions: list[str],
+    report_format: str,
 ) -> None:
     try:
         _update_job(job_id, status="running", stage="phase03", message="กำลังอ่านข้อความจาก PDF และ OCR เมื่อจำเป็น", progress=20)
         phase03_path, phase03 = ingest_pdf(str(source_path), str(OUTPUT_DIR))
 
-        _update_job(job_id, stage="phase04", message="กำลังแบ่งข้อความเป็น evidence chunks", progress=45)
-        phase04 = build_phase04(phase03, Settings(), embed=False)
+        phase04_settings = Settings.load()
+        create_embeddings = phase04_settings.embedding_provider != "none"
+        phase04_message = "กำลังแบ่งข้อความเป็น evidence chunks"
+        if create_embeddings:
+            phase04_message += " และสร้าง embeddings"
+        _update_job(job_id, stage="phase04", message=phase04_message, progress=45)
+        phase04 = build_phase04(
+            phase03,
+            phase04_settings,
+            embed=create_embeddings,
+        )
         phase04_path = OUTPUT_DIR / f"{phase03['document_id']}_phase04.json"
         phase04_path.write_text(json.dumps(phase04, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -76,6 +96,7 @@ def _run_pipeline(
                 "huggingface": "Qwen3-8B ในเครื่อง",
                 "ollama": "Ollama",
                 "openai": "OpenAI API",
+                "anthropic": "Claude API",
             }[provider]
             _update_job(job_id, stage="phase05", message=f"{provider_name} กำลังประเมินตามเกณฑ์ IOP", progress=65)
             dimension_suffix = (
@@ -91,6 +112,8 @@ def _run_pipeline(
                 "--output", str(phase05_path),
                 "--provider", provider,
                 "--top-k", str(WEB_LLM_TOP_K),
+                "--retrieval", "hybrid",
+                "--semantic-weight", str(WEB_SEMANTIC_WEIGHT),
                 "--dimensions", ",".join(dimensions),
             ]
             if model:
@@ -138,9 +161,40 @@ def _run_pipeline(
                     detail or f"Phase 05 exited with status {return_code}."
                 )
 
+            _update_job(
+                job_id,
+                stage="phase06",
+                message="กำลังจัดทำสรุปผลสำหรับรายงาน",
+                progress=95,
+            )
+            good_examples = json.loads(GOOD_EXAMPLES_PATH.read_text(encoding="utf-8"))
+            phase05 = json.loads(phase05_path.read_text(encoding="utf-8"))
+            phase06 = build_summary(phase05, good_examples, "none", None)
+            validate_summary_integrity(phase06)
+            phase06_path = OUTPUT_DIR / f"{phase03['document_id']}_phase06_summary.json"
+            phase06_path.write_text(
+                json.dumps(phase06, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            _update_job(
+                job_id,
+                stage="phase07",
+                message="กำลังสร้างไฟล์รายงาน",
+                progress=98,
+            )
+            report_paths: dict[str, Path] = {}
+            extensions = ("pdf", "docx") if report_format == "both" else (report_format,)
+            for extension in extensions:
+                report_path = OUTPUT_DIR / f"{phase03['document_id']}_iop_report.{extension}"
+                build_report(phase06, report_path)
+                report_paths[f"report_{extension}"] = report_path
+
         paths = {"phase03": str(phase03_path), "phase04": str(phase04_path)}
         if phase05_path:
             paths["phase05"] = str(phase05_path)
+            paths["phase06"] = str(phase06_path)
+            paths.update({name: str(path) for name, path in report_paths.items()})
         _update_job(
             job_id,
             status="completed",
@@ -174,12 +228,16 @@ async def create_job(
     provider: str = Form("huggingface"),
     model: str | None = Form(None),
     dimensions: list[str] | None = Form(None),
+    report_format: str = Form("pdf"),
 ) -> dict[str, str]:
     if not file.filename or Path(file.filename).suffix.lower() != ".pdf":
         raise HTTPException(status_code=400, detail="รองรับเฉพาะไฟล์ PDF")
     provider = provider.strip().lower()
     if provider not in LLM_PROVIDERS:
         raise HTTPException(status_code=400, detail="ไม่รองรับ LLM provider นี้")
+    report_format = report_format.strip().lower()
+    if report_format not in REPORT_FORMATS:
+        raise HTTPException(status_code=400, detail="ไม่รองรับรูปแบบรายงานนี้")
     model = model.strip() if model else None
     if provider == "ollama" and not model:
         raise HTTPException(status_code=400, detail="กรุณาระบุ Ollama model tag จาก /api/tags")
@@ -209,6 +267,7 @@ async def create_job(
             "provider": provider,
             "model": model,
             "dimensions": selected_dimensions,
+            "report_format": report_format,
             "status": "queued",
             "stage": "queued",
             "message": "รอเริ่มประมวลผล",
@@ -224,6 +283,7 @@ async def create_job(
         provider,
         model,
         selected_dimensions,
+        report_format,
     )
     return {"id": job_id}
 
@@ -235,11 +295,16 @@ def get_job(job_id: str) -> dict[str, Any]:
 
 @app.get("/api/jobs/{job_id}/output/{output_name}")
 def download_output(job_id: str, output_name: str) -> FileResponse:
-    if output_name not in {"phase03", "phase04", "phase05"}:
+    if output_name not in {"phase03", "phase04", "phase05", "phase06", "report_pdf", "report_docx"}:
         raise HTTPException(status_code=404, detail="ไม่พบชนิดผลลัพธ์")
     with JOBS_LOCK:
         job = JOBS.get(job_id)
         path = Path(job["paths"].get(output_name, "")) if job else None
     if not path or not path.is_file():
         raise HTTPException(status_code=404, detail="ผลลัพธ์ยังไม่พร้อม")
-    return FileResponse(path, media_type="application/json", filename=path.name)
+    media_types = {
+        ".json": "application/json",
+        ".pdf": "application/pdf",
+        ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    return FileResponse(path, media_type=media_types.get(path.suffix.lower()), filename=path.name)

@@ -17,10 +17,68 @@ os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 
 def complete_json(settings: LLMSettings, messages: list[dict[str, str]]) -> dict[str, Any]:
-    """Request a JSON object from the configured Qwen provider."""
+    """Request a JSON object from the configured LLM provider."""
     if settings.provider == "huggingface":
         return _huggingface_complete_json(settings, messages)
+    if settings.provider == "anthropic":
+        return _anthropic_complete_json(settings, messages)
     return _openai_compatible_complete_json(settings, messages)
+
+
+def _anthropic_complete_json(
+    settings: LLMSettings,
+    messages: list[dict[str, str]],
+) -> dict[str, Any]:
+    """Request JSON through Anthropic's native Messages API."""
+    try:
+        from anthropic import Anthropic
+    except ImportError as exc:
+        raise RuntimeError(
+            "Claude API support requires `pip install anthropic`."
+        ) from exc
+
+    if not settings.api_key:
+        raise RuntimeError(
+            "Claude API requires ANTHROPIC_API_KEY or IOP_LLM_API_KEY."
+        )
+
+    system_parts = [
+        message["content"]
+        for message in messages
+        if message.get("role") == "system"
+    ]
+    api_messages = [
+        {"role": message["role"], "content": message["content"]}
+        for message in messages
+        if message.get("role") in {"user", "assistant"}
+    ]
+    client_options: dict[str, Any] = {"api_key": settings.api_key}
+    if settings.base_url:
+        client_options["base_url"] = settings.base_url
+    client = Anthropic(**client_options)
+
+    request_options: dict[str, Any] = {
+        "model": settings.model,
+        "max_tokens": settings.max_new_tokens,
+        "messages": api_messages,
+    }
+    if system_parts:
+        request_options["system"] = "\n\n".join(system_parts)
+    response = client.messages.create(**request_options)
+
+    text_blocks = []
+    for block in response.content:
+        block_type = (
+            block.get("type") if isinstance(block, dict) else getattr(block, "type", None)
+        )
+        if block_type != "text":
+            continue
+        block_text = (
+            block.get("text", "") if isinstance(block, dict) else getattr(block, "text", "")
+        )
+        if block_text:
+            text_blocks.append(block_text)
+    return _parse_json_object("\n".join(text_blocks).strip())
 
 
 def _openai_compatible_complete_json(settings: LLMSettings, messages: list[dict[str, str]]) -> dict[str, Any]:

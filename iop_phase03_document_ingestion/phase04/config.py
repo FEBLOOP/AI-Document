@@ -12,7 +12,7 @@ class Settings:
     chunk_overlap_blocks: int = 1
     min_section_heading_chars: int = 3
     embedding_provider: str = "none"
-    embedding_model: str = "all-MiniLM-L6-v2"
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dimensions: int = 256
 
     @classmethod

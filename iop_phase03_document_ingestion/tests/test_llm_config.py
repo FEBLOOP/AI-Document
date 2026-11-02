@@ -1,10 +1,15 @@
+import sys
 from types import SimpleNamespace
 
 import pytest
 
-from llm.config import DEFAULT_LLM_MODEL, load_llm_settings
+from llm.config import DEFAULT_ANTHROPIC_MODEL, DEFAULT_LLM_MODEL, load_llm_settings
 from llm.config import LLMSettings
-from llm.provider import _openai_compatible_complete_json, _parse_json_object
+from llm.provider import (
+    _anthropic_complete_json,
+    _openai_compatible_complete_json,
+    _parse_json_object,
+)
 
 
 def test_llm_defaults_to_qwen3_8b(monkeypatch):
@@ -22,6 +27,63 @@ def test_llm_defaults_to_qwen3_8b(monkeypatch):
 def test_llm_model_can_be_overridden_by_environment(monkeypatch):
     monkeypatch.setenv("IOP_LLM_MODEL", "custom-qwen")
     assert load_llm_settings().model == "custom-qwen"
+
+
+def test_anthropic_uses_provider_default_and_api_key(monkeypatch):
+    monkeypatch.delenv("IOP_LLM_MODEL", raising=False)
+    monkeypatch.delenv("IOP_LLM_API_KEY", raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic-key")
+
+    settings = load_llm_settings("anthropic")
+
+    assert settings.model == DEFAULT_ANTHROPIC_MODEL == "claude-sonnet-5"
+    assert settings.api_key == "test-anthropic-key"
+
+
+def test_anthropic_sends_system_separately_and_parses_text(monkeypatch):
+    captured = {}
+
+    class FakeMessages:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            return SimpleNamespace(
+                content=[SimpleNamespace(type="text", text='{"ok": true}')]
+            )
+
+    class FakeAnthropic:
+        def __init__(self, **kwargs):
+            captured["client_options"] = kwargs
+            self.messages = FakeMessages()
+
+    monkeypatch.setitem(
+        sys.modules,
+        "anthropic",
+        SimpleNamespace(Anthropic=FakeAnthropic),
+    )
+    settings = LLMSettings(
+        "anthropic",
+        "claude-sonnet-5",
+        None,
+        "test-key",
+        512,
+        False,
+    )
+
+    result = _anthropic_complete_json(
+        settings,
+        [
+            {"role": "system", "content": "Return JSON."},
+            {"role": "user", "content": "Assess this."},
+        ],
+    )
+
+    assert result == {"ok": True}
+    assert captured["client_options"] == {"api_key": "test-key"}
+    assert captured["system"] == "Return JSON."
+    assert captured["messages"] == [
+        {"role": "user", "content": "Assess this."}
+    ]
+    assert captured["max_tokens"] == 512
 
 
 def test_ollama_disables_thinking_and_limits_output(monkeypatch):

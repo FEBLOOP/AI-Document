@@ -19,6 +19,30 @@ python -m phase05.cli --phase04 ".\data\output\DOC_DD3C35531469_phase04.json" --
 
 The result contains per-criterion candidates, score, confidence, cited chunk IDs, strengths and missing points. Dimension roll-ups and narrative summaries are intentionally left to Phase 06.
 
+## Hybrid retrieval
+
+Phase 05 defaults to `--retrieval hybrid`. It combines the existing lexical/Thai-trigram score with cosine similarity over Phase 04 embeddings. The default semantic weight is `0.7`. Each evidence item records `lexical_score`, `semantic_score`, and the combined `relevance_score`.
+
+```powershell
+$env:PHASE04_EMBEDDING_PROVIDER = "sentence_transformers"
+$env:PHASE04_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+python -m phase04.cli --input ".\data\output\DOC_xxx.json" --output ".\data\output\DOC_xxx_phase04.json" --embed
+python -m phase05.cli --phase04 ".\data\output\DOC_xxx_phase04.json" --rubric "..\data\knowledge_base\iop_reference.json" --output ".\data\output\DOC_xxx_phase05.json" --retrieval hybrid --semantic-weight 0.7
+```
+
+If the Phase 04 file has no embeddings or the embedding model is unavailable, hybrid mode reports the reason and falls back to lexical retrieval. `--retrieval embedding` is strict and stops instead of falling back.
+
+## Claude API assessment
+
+Install the base requirements, set `ANTHROPIC_API_KEY`, and select the native
+Anthropic provider. The API key stays in the server environment and is not
+written to the assessment output.
+
+```powershell
+$env:ANTHROPIC_API_KEY = "your-key"
+python -m phase05.cli --phase04 ".\data\output\DOC_xxx_phase04.json" --rubric "..\data\knowledge_base\iop_reference.json" --output ".\data\output\DOC_xxx_phase05_claude.json" --provider anthropic --model claude-sonnet-5
+```
+
 ## Assess selected dimensions
 
 Use `--dimensions` with comma-separated dimension IDs to process only the required sections. This reduces retrieval, LLM calls, and processing time. Omitting the option keeps the existing D1-D8 behavior.

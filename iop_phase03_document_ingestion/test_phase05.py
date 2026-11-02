@@ -1,13 +1,89 @@
 from llm.config import LLMSettings
 from phase05.assessment import assess_dimension_with_llm, review_packet
 from phase05.cli import _build_output, _parse_dimensions, _resume_items, _write_output_atomic
-from phase05.retrieval import retrieve
+from phase05.retrieval import evidence_item, query_embedder_from_chunks, retrieve
 from phase05.rubric import load_criteria
 
 
 def test_retrieval_returns_matching_chunk():
     hits = retrieve([{"chunk_id": "C1", "normalized_text": "นโยบายด้านนวัตกรรมและผู้บริหาร"}, {"chunk_id": "C2", "normalized_text": "การเงินบัญชี"}], "ผู้บริหาร นวัตกรรม", 1)
     assert hits[0]["chunk"]["chunk_id"] == "C1"
+
+
+def test_hybrid_retrieval_combines_semantic_and_lexical_scores():
+    chunks = [
+        {
+            "chunk_id": "LEXICAL",
+            "normalized_text": "นโยบายผู้บริหาร",
+            "embedding": {"provider": "hash", "model": "test", "vector": [0.0, 1.0]},
+        },
+        {
+            "chunk_id": "SEMANTIC",
+            "normalized_text": "ข้อความที่ใช้คำต่างกัน",
+            "embedding": {"provider": "hash", "model": "test", "vector": [1.0, 0.0]},
+        },
+    ]
+
+    hits = retrieve(
+        chunks,
+        "นโยบายผู้บริหาร",
+        2,
+        mode="hybrid",
+        query_vector=[1.0, 0.0],
+        semantic_weight=0.7,
+    )
+
+    assert hits[0]["chunk"]["chunk_id"] == "SEMANTIC"
+    assert hits[0]["semantic_score"] == 1.0
+    assert hits[1]["lexical_score"] > 0
+
+
+def test_evidence_item_preserves_hybrid_score_breakdown():
+    item = evidence_item(
+        {
+            "score": 0.8,
+            "lexical_score": 0.4,
+            "semantic_score": 0.9,
+            "chunk": {"chunk_id": "C1", "normalized_text": "หลักฐาน"},
+        }
+    )
+
+    assert item["relevance_score"] == 0.8
+    assert item["lexical_score"] == 0.4
+    assert item["semantic_score"] == 0.9
+
+
+def test_query_embedder_uses_phase04_embedding_metadata(monkeypatch):
+    captured = {}
+    expected = object()
+
+    def fake_create_embedder(provider, model, dimensions):
+        captured.update(
+            provider=provider,
+            model=model,
+            dimensions=dimensions,
+        )
+        return expected
+
+    monkeypatch.setattr("phase05.retrieval.create_embedder", fake_create_embedder)
+    chunks = [
+        {
+            "embedding": {
+                "provider": "sentence_transformers",
+                "model": "multilingual-test",
+                "vector": [0.1, 0.2, 0.3],
+            }
+        }
+    ]
+
+    result = query_embedder_from_chunks(chunks)
+
+    assert result is expected
+    assert captured == {
+        "provider": "sentence_transformers",
+        "model": "multilingual-test",
+        "dimensions": 3,
+    }
 
 
 def test_iop_hierarchy_is_flattened():

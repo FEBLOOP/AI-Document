@@ -24,6 +24,13 @@ python -m phase06.cli --phase05 ".\data\output\DOC_DD3C35531469_phase05_assessme
 
 The model receives only Phase 05 and the Good Examples style patterns. Its contract is to write prose and choose only existing evidence chunk IDs. It must not rescore, add evidence, add missing points, add strengths, add numbers, or state new facts. The program retains the original citation objects, including page and source-block provenance.
 
+Claude can also write the Phase 06 narrative through the native Anthropic API:
+
+```powershell
+$env:ANTHROPIC_API_KEY = "your-key"
+python -m phase06.cli --phase05 ".\data\output\DOC_xxx_phase05_claude.json" --good-examples "..\data\knowledge_base\good_examples_kb.json" --output ".\data\output\DOC_xxx_phase06_claude.json" --provider anthropic --model claude-sonnet-5
+```
+
 ## Output
 
 The JSON contains `assessment_id`, `document_id`, `overall_summary`, all `dimension_summaries` (D1–D8 supplied by Phase 05), criterion summaries, strengths, areas for improvement, citations, Good Examples references, and immutable Phase 05 snapshots. Run validation in code with:

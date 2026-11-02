@@ -12,7 +12,7 @@ from . import SCHEMA_VERSION
 from llm import load_llm_settings
 
 from .assessment import assess_dimension_with_llm, review_packet
-from .retrieval import evidence_item, retrieve
+from .retrieval import evidence_item, query_embedder_from_chunks, retrieve
 from .rubric import load_criteria
 
 
@@ -25,6 +25,16 @@ def _parse_dimensions(value: str | None) -> list[str] | None:
         if dimension_id and dimension_id not in selected:
             selected.append(dimension_id)
     return selected or None
+
+
+def _criterion_query(criterion: dict[str, Any]) -> str:
+    return " ".join(
+        [
+            criterion["criterion"],
+            *criterion["assessment_points"],
+            *criterion["supporting_documents"],
+        ]
+    )
 
 
 def _build_output(
@@ -99,9 +109,11 @@ def main() -> None:
     parser.add_argument("--phase04", required=True, help="Phase 04 JSON")
     parser.add_argument("--rubric", required=True, help="IOP reference JSON")
     parser.add_argument("--output", required=True)
-    parser.add_argument("--provider", choices=["none", "huggingface", "ollama", "openai"], default="none", help="LLM provider; use none for evidence-only output")
-    parser.add_argument("--model", help="Overrides IOP_LLM_MODEL (defaults to Qwen/Qwen3-8B)")
+    parser.add_argument("--provider", choices=["none", "anthropic", "huggingface", "ollama", "openai"], default="none", help="LLM provider; use none for evidence-only output")
+    parser.add_argument("--model", help="Overrides IOP_LLM_MODEL")
     parser.add_argument("--top-k", type=int, default=2)
+    parser.add_argument("--retrieval", choices=["lexical", "embedding", "hybrid"], default="hybrid", help="Evidence retrieval strategy; hybrid falls back to lexical when embeddings are unavailable")
+    parser.add_argument("--semantic-weight", type=float, default=0.7, help="Semantic score weight for hybrid retrieval (0-1)")
     parser.add_argument("--batch-size", type=int, default=2, help="Criteria per LLM request")
     parser.add_argument("--max-evidence-chars", type=int, default=800, help="Maximum prompt characters per evidence item")
     parser.add_argument("--retries", type=int, default=2, help="Retries for invalid or incomplete LLM JSON")
@@ -110,6 +122,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.top_k < 1:
         parser.error("--top-k must be at least 1")
+    if not 0 <= args.semantic_weight <= 1:
+        parser.error("--semantic-weight must be between 0 and 1")
     if args.batch_size < 1:
         parser.error("--batch-size must be at least 1")
     if args.max_evidence_chars < 1:
@@ -143,7 +157,38 @@ def main() -> None:
         for criterion in criteria
         if str(criterion["dimension_id"]).upper() in selected_dimensions
     ]
+    criterion_queries = {
+        str(criterion["criterion_id"]): _criterion_query(criterion)
+        for criterion in criteria
+    }
+    effective_retrieval = args.retrieval
+    query_vectors: dict[str, list[float]] = {}
+    if args.retrieval in {"embedding", "hybrid"}:
+        try:
+            query_embedder = query_embedder_from_chunks(phase04["chunks"])
+            criterion_ids = list(criterion_queries)
+            vectors = query_embedder.embed(
+                [criterion_queries[criterion_id] for criterion_id in criterion_ids]
+            )
+            if len(vectors) != len(criterion_ids):
+                raise ValueError("Embedding provider returned an unexpected vector count.")
+            query_vectors = {
+                criterion_id: [float(value) for value in vector]
+                for criterion_id, vector in zip(criterion_ids, vectors)
+            }
+        except Exception as exc:
+            if args.retrieval == "embedding":
+                parser.error(f"Embedding retrieval is unavailable: {exc}")
+            effective_retrieval = "lexical"
+            print(
+                f"Hybrid retrieval fallback to lexical: {exc}",
+                flush=True,
+            )
     print(f"Selected dimensions: {', '.join(selected_dimensions)}", flush=True)
+    print(
+        f"Retrieval: requested={args.retrieval}, effective={effective_retrieval}",
+        flush=True,
+    )
     grouped_criteria = defaultdict(list)
     for criterion in criteria:
         grouped_criteria[criterion["dimension_id"]].append(criterion)
@@ -166,6 +211,9 @@ def main() -> None:
     run_config = {
         "dimensions": selected_dimensions,
         "top_k": args.top_k,
+        "retrieval": args.retrieval,
+        "effective_retrieval": effective_retrieval,
+        "semantic_weight": args.semantic_weight,
         "batch_size": args.batch_size,
         "max_evidence_chars": args.max_evidence_chars,
         "retries": args.retries,
@@ -201,16 +249,17 @@ def main() -> None:
                     batch_items.append(completed_items[criterion_id])
                     continue
 
-                query = " ".join(
-                    [
-                        criterion["criterion"],
-                        *criterion["assessment_points"],
-                        *criterion["supporting_documents"],
-                    ]
-                )
+                query = criterion_queries[criterion_id]
                 evidence = [
                     evidence_item(hit)
-                    for hit in retrieve(phase04["chunks"], query, args.top_k)
+                    for hit in retrieve(
+                        phase04["chunks"],
+                        query,
+                        args.top_k,
+                        mode=effective_retrieval,
+                        query_vector=query_vectors.get(criterion_id),
+                        semantic_weight=args.semantic_weight,
+                    )
                 ]
                 packet = review_packet(
                     criterion,
