@@ -11,6 +11,8 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
+from .scoring import calculate_scoring
+
 
 NAVY = "17324D"
 BLUE = "2878B5"
@@ -23,15 +25,6 @@ def _text(value: Any) -> str:
         return "-"
     rendered = str(value).strip()
     return rendered or "-"
-
-
-def _dimension_score(dimension: dict[str, Any]) -> float | None:
-    scores = [
-        item.get("score")
-        for item in dimension.get("criterion_summaries", [])
-        if isinstance(item.get("score"), (int, float))
-    ]
-    return round(sum(scores) / len(scores), 2) if scores else None
 
 
 def _set_cell_shading(cell, fill: str) -> None:
@@ -159,7 +152,11 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
 
 
-def build_docx_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
+def build_docx_report(
+    phase06: dict[str, Any],
+    output_path: str | Path,
+    rubric: dict[str, Any] | None = None,
+) -> Path:
     """Render a validated Phase 06 package as an editable Thai Word report."""
     if not isinstance(phase06.get("dimension_summaries"), list):
         raise ValueError("Input is not a Phase 06 summary: dimension_summaries is required.")
@@ -167,6 +164,7 @@ def build_docx_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     document_id = _text(phase06.get("document_id"))
+    scoring = calculate_scoring(phase06, rubric)
     document = Document()
     _configure_styles(document)
 
@@ -195,6 +193,31 @@ def build_docx_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
         + (f" / {_text(phase06.get('summary_model'))}" if phase06.get("summary_model") else "")
     )
 
+    document.add_heading("ผลคะแนนองค์กร", level=1)
+    if scoring["status"] == "complete":
+        score_table = document.add_table(rows=1, cols=4)
+        score_table.style = "Table Grid"
+        values = [
+            "คะแนนรวมองค์กร",
+            f"{scoring['overall_score_display']:.2f}/5",
+            "Maturity Level",
+            scoring["maturity_level"],
+        ]
+        for index, (cell, value) in enumerate(zip(score_table.rows[0].cells, values)):
+            _set_cell_shading(cell, LIGHT_BLUE)
+            run = cell.paragraphs[0].add_run(_text(value))
+            _set_font(run, size=14, bold=index % 2 == 0 or index == 3)
+        document.add_paragraph(_text(scoring["maturity_description"]))
+    else:
+        document.add_paragraph(
+            f"สถานะ: incomplete — มีคะแนนถูกต้อง {scoring['scored_criteria']} "
+            f"จาก {scoring['total_criteria']} เกณฑ์ จึงยังไม่แสดงคะแนนรวมและ Maturity Level"
+        )
+        missing = ", ".join(scoring["missing_criterion_ids"][:12]) or "-"
+        if len(scoring["missing_criterion_ids"]) > 12:
+            missing += " …"
+        document.add_paragraph(f"เกณฑ์ที่ขาด: {missing}")
+
     document.add_heading("สรุปภาพรวม", level=1)
     document.add_paragraph(_text(phase06.get("overall_summary")))
     dimensions = phase06.get("dimension_summaries", [])
@@ -202,7 +225,7 @@ def build_docx_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
     overview.style = "Table Grid"
     _fill_table_header(overview.rows[0], ["มิติ", "ชื่อมิติ", "จำนวนเกณฑ์", "คะแนนเฉลี่ย"])
     for dimension in dimensions:
-        average = _dimension_score(dimension)
+        average = scoring["dimension_scores"].get(str(dimension.get("dimension_id")))
         values = [
             dimension.get("dimension_id"),
             dimension.get("dimension_name"),
@@ -219,7 +242,7 @@ def build_docx_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
         dimension_id = _text(dimension.get("dimension_id"))
         dimension_name = _text(dimension.get("dimension_name"))
         document.add_heading(f"{dimension_id}  {dimension_name}", level=1)
-        average = _dimension_score(dimension)
+        average = scoring["dimension_scores"].get(dimension_id)
         if average is not None:
             banner = document.add_table(rows=1, cols=1)
             banner.style = "Table Grid"

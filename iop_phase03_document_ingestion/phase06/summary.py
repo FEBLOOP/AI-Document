@@ -48,10 +48,16 @@ def _criterion_summary(result: dict[str, Any], narrative: str | None = None, cit
         "criterion_id": snapshot["criterion"].get("criterion_id"),
         "component_id": snapshot["criterion"].get("component_id"),
         "criterion": snapshot["criterion"].get("criterion"),
-        "status": snapshot["status"],
+        "status": (
+            "assessed"
+            if str(snapshot["status"]).startswith("assessed")
+            else snapshot["status"]
+        ),
         "score": assessment.get("score"),
         "confidence": assessment.get("confidence"),
+        "evidence_sufficiency": assessment.get("evidence_sufficiency"),
         "summary": narrative if narrative is not None else _narrative(result),
+        "matched_points": _items(assessment.get("matched_points")),
         "strengths": _items(assessment.get("strengths")),
         "areas_for_improvement": _items(assessment.get("missing_points")),
         "citations": [citations[chunk_id] for chunk_id in selected_ids],
@@ -125,8 +131,13 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
             built["strengths"] = _dedupe([value for item in built["criterion_summaries"] for value in item["strengths"]])
             built["areas_for_improvement"] = _dedupe([value for item in built["criterion_summaries"] for value in item["areas_for_improvement"]])
         dimensions.append(built)
-    source_snapshots = {item["criterion_id"]: copy.deepcopy(item["phase05_snapshot"])
-                        for dimension in dimensions for item in dimension["criterion_summaries"]}
+    source_snapshots: dict[str, dict[str, Any]] = {}
+    for dimension in dimensions:
+        for item in dimension["criterion_summaries"]:
+            criterion_id = str(item["criterion_id"])
+            if criterion_id in source_snapshots:
+                raise ValueError(f"Duplicate criterion_id in Phase 05: {criterion_id}.")
+            source_snapshots[criterion_id] = copy.deepcopy(item["phase05_snapshot"])
     output = {
         "schema_version": SCHEMA_VERSION,
         "phase": "06",
@@ -135,7 +146,7 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
         "created_at": datetime.now(timezone.utc).isoformat(),
         "summary_provider": settings.provider if settings else "none",
         "summary_model": settings.model if settings else None,
-        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "criterion_snapshots": source_snapshots,
+        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "rubric": copy.deepcopy(phase05.get("rubric")), "criterion_snapshots": source_snapshots,
                               "criterion_snapshot_digests": {key: snapshot_digest(value) for key, value in source_snapshots.items()}},
         "good_examples_reference": {"knowledge_base": styles["knowledge_base"], "rules": styles["rules"], "overall_example": styles["overall_example"]},
         "overall_summary": str((generated or {}).get("overall_summary") or _template_overall(dimensions, styles["overall_example"])),

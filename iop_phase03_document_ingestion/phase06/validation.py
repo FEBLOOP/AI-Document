@@ -44,6 +44,8 @@ def validate_summary_integrity(summary: dict[str, Any]) -> None:
             criterion_id = criterion.get("criterion_id")
             if not criterion_id:
                 raise ValueError("A criterion summary has no criterion_id.")
+            if criterion_id in observed:
+                raise ValueError(f"Duplicate criterion_id in Phase 06: {criterion_id}.")
             observed[criterion_id] = criterion.get("phase05_snapshot")
             evidence_ids = set(citation_map(criterion.get("phase05_snapshot", {})))
             for citation in criterion.get("citations", []):

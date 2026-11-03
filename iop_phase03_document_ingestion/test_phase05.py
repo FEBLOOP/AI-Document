@@ -3,6 +3,7 @@ from phase05.assessment import assess_dimension_with_llm, review_packet
 from phase05.cli import _build_output, _parse_dimensions, _resume_items, _write_output_atomic
 from phase05.retrieval import evidence_item, query_embedder_from_chunks, retrieve
 from phase05.rubric import load_criteria
+from phase05.rubric import load_scoring_guide
 
 
 def test_retrieval_returns_matching_chunk():
@@ -91,6 +92,45 @@ def test_iop_hierarchy_is_flattened():
     assert load_criteria(rubric)[0]["criterion_id"] == "1.1.1"
 
 
+def test_scoring_guide_is_loaded_from_rubric():
+    guide = {str(score): f"rubric level {score}" for score in range(1, 6)}
+    assert load_scoring_guide({"scoring_guide": guide}) == guide
+
+
+def test_dimension_prompt_uses_supplied_rubric_and_forbids_evidence_count_scoring(monkeypatch):
+    captured = {}
+
+    def fake_complete_json(settings, messages):
+        captured["messages"] = messages
+        return {
+            "assessments": [
+                {
+                    "criterion_id": "1.1.1",
+                    "score": 3,
+                    "confidence": 0.7,
+                    "evidence_sufficiency": "sufficient",
+                    "evidence_chunk_ids": [],
+                    "matched_points": [],
+                    "strengths": [],
+                    "missing_points": [],
+                }
+            ]
+        }
+
+    monkeypatch.setattr("phase05.assessment.complete_json", fake_complete_json)
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+    guide = {str(score): f"custom level {score}" for score in range(1, 6)}
+
+    assess_dimension_with_llm(
+        [{"criterion": {"criterion_id": "1.1.1"}, "evidence": []}],
+        settings,
+        scoring_guide=guide,
+    )
+
+    assert "custom level 5" in captured["messages"][1]["content"]
+    assert "Evidence count alone must never determine a score" in captured["messages"][0]["content"]
+
+
 def test_dimension_selection_is_normalized_and_deduplicated():
     assert _parse_dimensions("d5, D1, d5") == ["D5", "D1"]
     assert _parse_dimensions(None) is None
@@ -103,8 +143,8 @@ def test_dimension_assessment_uses_one_call_and_preserves_criterion_order(monkey
         calls.append((settings, messages))
         return {
             "assessments": [
-                {"criterion_id": "1.1.2", "score": 4, "confidence": 0.8},
-                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7},
+                {"criterion_id": "1.1.2", "score": 4, "confidence": 0.8, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
+                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
             ]
         }
 
@@ -145,7 +185,7 @@ def test_dimension_assessment_retries_incomplete_json(monkeypatch):
             return {"assessments": []}
         return {
             "assessments": [
-                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7},
+                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
             ]
         }
 
@@ -178,6 +218,35 @@ def test_dimension_error_shows_raw_response_shape(monkeypatch):
         assert '"criteria_assessment": []' in str(error)
     else:
         raise AssertionError("Expected invalid response shape to fail")
+
+
+def test_evidence_sufficiency_is_optional_and_invalid_value_is_ignored(monkeypatch):
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {
+            "assessments": [
+                {
+                    "criterion_id": "1.1.1",
+                    "score": 3,
+                    "confidence": 0.7,
+                    "evidence_sufficiency": "partially_sufficient",
+                    "evidence_chunk_ids": [],
+                    "matched_points": [],
+                    "strengths": [],
+                    "missing_points": [],
+                }
+            ]
+        },
+    )
+    settings = LLMSettings("anthropic", "claude-sonnet-5", None, "key", 512, True)
+
+    result = assess_dimension_with_llm(
+        [{"criterion": {"criterion_id": "1.1.1"}, "evidence": []}],
+        settings,
+    )
+
+    assert result[0]["score"] == 3
+    assert "evidence_sufficiency" not in result[0]
 
 
 def test_checkpoint_can_resume_assessed_criteria(tmp_path):

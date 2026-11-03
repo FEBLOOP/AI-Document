@@ -13,7 +13,7 @@ from llm import load_llm_settings
 
 from .assessment import assess_dimension_with_llm, review_packet
 from .retrieval import evidence_item, query_embedder_from_chunks, retrieve
-from .rubric import load_criteria
+from .rubric import load_criteria, load_scoring_guide, rubric_manifest
 
 
 def _parse_dimensions(value: str | None) -> list[str] | None:
@@ -44,6 +44,7 @@ def _build_output(
     created_at: str,
     total_criteria: int,
     run_config: dict[str, Any],
+    rubric_info: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     by_dimension = defaultdict(list)
     for result in results:
@@ -57,6 +58,7 @@ def _build_output(
         "assessment_provider": settings.provider if settings else "none",
         "assessment_model": settings.model if settings else None,
         "run_config": run_config,
+        "rubric": rubric_info,
         "dimensions": [
             {"dimension_id": key, "criteria": value}
             for key, value in by_dimension.items()
@@ -97,7 +99,7 @@ def _resume_items(
             criterion_id = str(item.get("criterion", {}).get("criterion_id", ""))
             if (
                 criterion_id
-                and item.get("status") == "assessed"
+                and str(item.get("status", "")).startswith("assessed")
                 and isinstance(item.get("assessment"), dict)
             ):
                 completed[criterion_id] = item
@@ -133,6 +135,8 @@ def main() -> None:
 
     phase04 = json.loads(Path(args.phase04).read_text(encoding="utf-8"))
     rubric = json.loads(Path(args.rubric).read_text(encoding="utf-8"))
+    scoring_guide = load_scoring_guide(rubric)
+    full_rubric_manifest = rubric_manifest(rubric)
     settings = load_llm_settings(args.provider, args.model) if args.provider != "none" else None
     output_path = Path(args.output)
     criteria = load_criteria(rubric)
@@ -288,6 +292,7 @@ def main() -> None:
                     settings,
                     max_attempts=args.retries + 1,
                     on_retry=report_retry,
+                    scoring_guide=scoring_guide,
                 )
                 for position, assessment in zip(pending_positions, assessments):
                     batch_items[position]["assessment"] = assessment
@@ -305,6 +310,7 @@ def main() -> None:
                 created_at,
                 len(criteria),
                 run_config,
+                full_rubric_manifest,
             )
             _write_output_atomic(output_path, output)
             elapsed = time.perf_counter() - started_at

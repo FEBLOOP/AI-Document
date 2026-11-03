@@ -22,6 +22,7 @@ from phase04.pipeline import build_phase04
 from phase06.summary import build_summary
 from phase06.validation import validate_summary_integrity
 from phase07.report import build_report
+from phase07.scoring import calculate_scoring
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -184,16 +185,32 @@ def _run_pipeline(
                 progress=98,
             )
             report_paths: dict[str, Path] = {}
+            rubric = json.loads(RUBRIC_PATH.read_text(encoding="utf-8"))
+            scoring = calculate_scoring(phase06, rubric)
+            scoring_path = OUTPUT_DIR / f"{phase03['document_id']}_phase07_scoring.json"
+            scoring_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "ai-document.phase07-scoring/v1",
+                        "document_id": phase03["document_id"],
+                        "scoring": scoring,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
             extensions = ("pdf", "docx") if report_format == "both" else (report_format,)
             for extension in extensions:
                 report_path = OUTPUT_DIR / f"{phase03['document_id']}_iop_report.{extension}"
-                build_report(phase06, report_path)
+                build_report(phase06, report_path, rubric)
                 report_paths[f"report_{extension}"] = report_path
 
         paths = {"phase03": str(phase03_path), "phase04": str(phase04_path)}
         if phase05_path:
             paths["phase05"] = str(phase05_path)
             paths["phase06"] = str(phase06_path)
+            paths["phase07_scoring"] = str(scoring_path)
             paths.update({name: str(path) for name, path in report_paths.items()})
         _update_job(
             job_id,
@@ -295,7 +312,7 @@ def get_job(job_id: str) -> dict[str, Any]:
 
 @app.get("/api/jobs/{job_id}/output/{output_name}")
 def download_output(job_id: str, output_name: str) -> FileResponse:
-    if output_name not in {"phase03", "phase04", "phase05", "phase06", "report_pdf", "report_docx"}:
+    if output_name not in {"phase03", "phase04", "phase05", "phase06", "phase07_scoring", "report_pdf", "report_docx"}:
         raise HTTPException(status_code=404, detail="ไม่พบชนิดผลลัพธ์")
     with JOBS_LOCK:
         job = JOBS.get(job_id)

@@ -24,6 +24,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from .scoring import calculate_scoring
+
 
 NAVY = colors.HexColor("#17324D")
 BLUE = colors.HexColor("#2878B5")
@@ -102,15 +104,6 @@ def _score_color(score: Any) -> colors.Color:
     if score >= 3:
         return AMBER
     return RED
-
-
-def _dimension_score(dimension: dict[str, Any]) -> float | None:
-    scores = [
-        item.get("score")
-        for item in dimension.get("criterion_summaries", [])
-        if isinstance(item.get("score"), (int, float))
-    ]
-    return round(sum(scores) / len(scores), 2) if scores else None
 
 
 def _styles(regular_font: str, bold_font: str) -> dict[str, ParagraphStyle]:
@@ -331,7 +324,11 @@ def _criterion_story(
     return story
 
 
-def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
+def build_pdf_report(
+    phase06: dict[str, Any],
+    output_path: str | Path,
+    rubric: dict[str, Any] | None = None,
+) -> Path:
     """Render a validated Phase 06 package as a readable Thai PDF report."""
     if not isinstance(phase06.get("dimension_summaries"), list):
         raise ValueError("Input is not a Phase 06 summary: dimension_summaries is required.")
@@ -341,6 +338,7 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     document_id = _text(phase06.get("document_id"))
+    scoring = calculate_scoring(phase06, rubric)
     doc = SimpleDocTemplate(
         str(target),
         pagesize=A4,
@@ -363,10 +361,51 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
             styles["subtitle"],
         ),
         Spacer(1, 20 * mm),
+        _paragraph("ผลคะแนนองค์กร", styles["h1"]),
+    ]
+    if scoring["status"] == "complete":
+        score_card = Table(
+            [[
+                _paragraph("คะแนนรวมองค์กร", styles["small"]),
+                _paragraph(f"{scoring['overall_score_display']:.2f}/5", styles["h2"]),
+                _paragraph("Maturity Level", styles["small"]),
+                _paragraph(scoring["maturity_level"], styles["h2"]),
+            ]],
+            colWidths=[34 * mm, 36 * mm, 34 * mm, 60 * mm],
+        )
+        score_card.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), LIGHT_BLUE),
+            ("BOX", (0, 0), (-1, -1), 0.75, BLUE),
+            ("INNERGRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#C8D5DF")),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        story.extend([
+            score_card,
+            Spacer(1, 2 * mm),
+            _paragraph(scoring["maturity_description"], styles["body"]),
+        ])
+    else:
+        missing = ", ".join(scoring["missing_criterion_ids"][:12]) or "-"
+        if len(scoring["missing_criterion_ids"]) > 12:
+            missing += " …"
+        story.extend([
+            _paragraph(
+                f"สถานะ: incomplete — มีคะแนนถูกต้อง {scoring['scored_criteria']} "
+                f"จาก {scoring['total_criteria']} เกณฑ์ จึงยังไม่แสดงคะแนนรวมและ Maturity Level",
+                styles["body"],
+            ),
+            _paragraph(f"เกณฑ์ที่ขาด: {missing}", styles["small"]),
+        ])
+    story.extend([
+        Spacer(1, 5 * mm),
         _paragraph("สรุปภาพรวม", styles["h1"]),
         _paragraph(phase06.get("overall_summary"), styles["body"]),
         Spacer(1, 5 * mm),
-    ]
+    ])
 
     dimensions = phase06.get("dimension_summaries", [])
     overview_rows = [[
@@ -376,7 +415,7 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
         _paragraph("คะแนนเฉลี่ย", styles["small"]),
     ]]
     for dimension in dimensions:
-        average = _dimension_score(dimension)
+        average = scoring["dimension_scores"].get(str(dimension.get("dimension_id")))
         overview_rows.append(
             [
                 _paragraph(dimension.get("dimension_id"), styles["body"]),
@@ -410,7 +449,7 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
         dimension_id = _text(dimension.get("dimension_id"))
         dimension_name = _text(dimension.get("dimension_name"))
         story.append(_paragraph(f"{dimension_id}  {dimension_name}", styles["h1"]))
-        average = _dimension_score(dimension)
+        average = scoring["dimension_scores"].get(dimension_id)
         if average is not None:
             score_banner = Table(
                 [[_paragraph(f"คะแนนเฉลี่ยมิติ {average:.2f}/5", styles["h2"])]],
@@ -455,14 +494,18 @@ def build_pdf_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
     return target
 
 
-def build_report(phase06: dict[str, Any], output_path: str | Path) -> Path:
+def build_report(
+    phase06: dict[str, Any],
+    output_path: str | Path,
+    rubric: dict[str, Any] | None = None,
+) -> Path:
     """Build a PDF or DOCX report according to the output file extension."""
     target = Path(output_path)
     suffix = target.suffix.lower()
     if suffix == ".pdf":
-        return build_pdf_report(phase06, target)
+        return build_pdf_report(phase06, target, rubric)
     if suffix == ".docx":
         from .docx_report import build_docx_report
 
-        return build_docx_report(phase06, target)
+        return build_docx_report(phase06, target, rubric)
     raise ValueError("Phase 07 output must use a .pdf or .docx extension.")

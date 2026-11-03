@@ -135,7 +135,7 @@
         meta.classList.remove('hidden');
         const names = ['phase03', 'phase04'];
         if (job.provider !== 'none') {
-          names.push('phase05', 'phase06');
+          names.push('phase05', 'phase06', 'phase07_scoring');
           if (job.report_format === 'pdf' || job.report_format === 'both') names.push('report_pdf');
           if (job.report_format === 'docx' || job.report_format === 'both') names.push('report_docx');
         }
@@ -143,6 +143,7 @@
         const labels = {
           phase03: 'ดาวน์โหลด PHASE03 JSON', phase04: 'ดาวน์โหลด PHASE04 JSON',
           phase05: 'ดาวน์โหลด PHASE05 JSON', phase06: 'ดาวน์โหลด PHASE06 JSON',
+          phase07_scoring: 'ดาวน์โหลดคะแนน PHASE07 JSON',
           report_pdf: 'ดาวน์โหลดรายงาน PDF', report_docx: 'ดาวน์โหลดรายงาน Word',
         };
         downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">${labels[name]}</a>`).join('');

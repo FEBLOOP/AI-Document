@@ -49,3 +49,37 @@ def test_none_assessment_creates_prompt_ready_template_without_score():
     item = summary["dimension_summaries"][0]["criterion_summaries"][0]
     assert item["score"] is None
     assert "ยังไม่มีผลคะแนน" in item["summary"]
+
+
+def test_duplicate_phase05_criterion_is_rejected():
+    phase05 = _phase05()
+    phase05["dimensions"][0]["criteria"].append(
+        copy.deepcopy(phase05["dimensions"][0]["criteria"][0])
+    )
+    with pytest.raises(ValueError, match="Duplicate criterion_id"):
+        build_summary(phase05, _good_examples())
+
+
+def test_phase06_preserves_rubric_manifest_for_phase07():
+    phase05 = _phase05()
+    phase05["rubric"] = {
+        "scoring_guide": {str(score): f"level {score}" for score in range(1, 6)},
+        "criteria": [{"criterion_id": "1.1.1", "dimension_id": "D1"}],
+    }
+
+    summary = build_summary(phase05, _good_examples())
+
+    assert summary["source_assessment"]["rubric"] == phase05["rubric"]
+
+
+def test_insufficient_evidence_checkpoint_is_displayed_as_assessed():
+    phase05 = _phase05()
+    item = phase05["dimensions"][0]["criteria"][0]
+    item["status"] = "assessed_insufficient_evidence"
+    item["assessment"]["evidence_sufficiency"] = "insufficient"
+
+    summary = build_summary(phase05, _good_examples())
+
+    criterion = summary["dimension_summaries"][0]["criterion_summaries"][0]
+    assert criterion["status"] == "assessed"
+    assert criterion["phase05_snapshot"]["status"] == "assessed_insufficient_evidence"

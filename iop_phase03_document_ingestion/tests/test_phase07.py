@@ -85,3 +85,50 @@ def test_build_report_rejects_unknown_extension(tmp_path):
         assert ".pdf or .docx" in str(exc)
     else:
         raise AssertionError("Expected an unsupported extension error")
+
+
+def test_pdf_and_docx_display_the_same_overall_score_and_maturity(tmp_path):
+    phase06 = {
+        "document_id": "DOC_SCORE",
+        "summary_provider": "none",
+        "summary_model": None,
+        "overall_summary": "สรุป",
+        "dimension_summaries": [
+            {
+                "dimension_id": "D1",
+                "dimension_name": "ยุทธศาสตร์นวัตกรรม",
+                "summary": "สรุปมิติ",
+                "strengths": [],
+                "areas_for_improvement": [],
+                "criterion_summaries": [
+                    {
+                        "criterion_id": "1.1.1",
+                        "criterion": "เกณฑ์",
+                        "status": "assessed",
+                        "score": 3,
+                        "confidence": 0.8,
+                        "summary": "เหตุผล",
+                        "strengths": [],
+                        "areas_for_improvement": [],
+                        "citations": [],
+                    }
+                ],
+            }
+        ],
+    }
+    rubric = {"criteria": [{"criterion_id": "1.1.1", "dimension_id": "D1"}]}
+    pdf_output = tmp_path / "score.pdf"
+    docx_output = tmp_path / "score.docx"
+
+    build_report(phase06, pdf_output, rubric)
+    build_report(phase06, docx_output, rubric)
+
+    pdf_text = "\n".join(page.extract_text() or "" for page in PdfReader(pdf_output).pages)
+    docx = Document(docx_output)
+    docx_text = "\n".join(
+        [paragraph.text for paragraph in docx.paragraphs]
+        + [cell.text for table in docx.tables for row in table.rows for cell in row.cells]
+    )
+    for expected in ("3.00/5", "Defined"):
+        assert expected in pdf_text
+        assert expected in docx_text

@@ -17,7 +17,7 @@ $env:IOP_LLM_MODEL = "Qwen/Qwen3-8B"
 python -m phase05.cli --phase04 ".\data\output\DOC_DD3C35531469_phase04.json" --rubric ".\data\knowledge_base\iop_reference.json" --output ".\data\output\DOC_DD3C35531469_phase05_assessment.json" --provider huggingface
 ```
 
-The result contains per-criterion candidates, score, confidence, cited chunk IDs, strengths and missing points. Dimension roll-ups and narrative summaries are intentionally left to Phase 06.
+The result contains the rubric snapshot plus per-criterion score, confidence, evidence sufficiency, matched points, cited chunk IDs, strengths, and missing points. The scoring guide is loaded from the supplied `--rubric` file; Phase 05 does not infer scores from the number of retrieved evidence chunks. Phase 06 writes narrative only, while numeric roll-ups and Maturity Level are calculated by Python in Phase 07.
 
 ## Hybrid retrieval
 
