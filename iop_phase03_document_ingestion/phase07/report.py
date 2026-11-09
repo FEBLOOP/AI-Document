@@ -280,7 +280,7 @@ def _criterion_story(
 
     citations = criterion.get("citations") or []
     if citations:
-        story.append(_paragraph("หลักฐานอ้างอิง", styles["h3"]))
+        story.append(_paragraph("หลักฐานที่โมเดลเลือกอ้างอิง", styles["h3"]))
         citation_rows = [[
             _paragraph("Chunk", styles["small"]),
             _paragraph("หน้า", styles["small"]),

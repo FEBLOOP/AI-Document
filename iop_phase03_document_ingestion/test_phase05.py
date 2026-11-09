@@ -1,5 +1,9 @@
+import json
+
+import pytest
+
 from llm.config import LLMSettings
-from phase05.assessment import assess_dimension_with_llm, review_packet
+from phase05.assessment import assess_dimension_with_llm, assess_with_llm, review_packet
 from phase05.cli import _build_output, _parse_dimensions, _resume_items, _write_output_atomic
 from phase05.retrieval import evidence_item, query_embedder_from_chunks, retrieve
 from phase05.rubric import load_criteria
@@ -275,3 +279,175 @@ def test_checkpoint_can_resume_assessed_criteria(tmp_path):
     assert completed["1.1.1"] == item
     assert created_at == "2026-01-01T00:00:00+00:00"
     assert not path.with_suffix(".json.tmp").exists()
+
+
+def _packet(criterion_id, evidence_count):
+    return {
+        "criterion": {"criterion_id": criterion_id},
+        "evidence": [
+            {"chunk_id": f"{criterion_id}-C{index}", "text": f"evidence {index}"}
+            for index in range(1, evidence_count + 1)
+        ],
+    }
+
+
+def _assessment(criterion_id, citation_ids):
+    return {
+        "criterion_id": criterion_id,
+        "score": 3,
+        "confidence": 0.8,
+        "rationale_th": "มีหลักฐานสนับสนุน",
+        "evidence_chunk_ids": citation_ids,
+        "matched_points": [],
+        "strengths": [],
+        "missing_points": [],
+    }
+
+
+@pytest.mark.parametrize("top_k", [2, 5, 8])
+def test_dynamic_citation_limit_follows_top_k(monkeypatch, top_k):
+    packet = _packet("1.1.1", top_k)
+    citation_ids = [item["chunk_id"] for item in packet["evidence"]]
+    captured = {}
+
+    def fake_complete_json(settings, messages):
+        captured["messages"] = messages
+        return {"assessments": [_assessment("1.1.1", citation_ids)]}
+
+    monkeypatch.setattr("phase05.assessment.complete_json", fake_complete_json)
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    result = assess_dimension_with_llm([packet], settings, top_k=top_k)
+
+    assert result[0]["citation_limit"] == top_k
+    assert len(result[0]["evidence_chunk_ids"]) == top_k
+    assert f"1.1.1={top_k}" in captured["messages"][0]["content"]
+    user_prompt = json.loads(captured["messages"][1]["content"])
+    assert user_prompt["criteria"][0]["citation_limit"] == top_k
+
+
+def test_citation_limit_uses_actual_distinct_evidence_count(monkeypatch):
+    packet = _packet("1.1.1", 3)
+    citation_ids = [item["chunk_id"] for item in packet["evidence"]]
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {"assessments": [_assessment("1.1.1", citation_ids)]},
+    )
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    result = assess_dimension_with_llm([packet], settings, top_k=5)
+
+    assert result[0]["citation_limit"] == 3
+
+
+def test_no_evidence_accepts_only_empty_citations(monkeypatch):
+    packet = _packet("1.1.1", 0)
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {"assessments": [_assessment("1.1.1", [])]},
+    )
+    assert assess_dimension_with_llm([packet], settings, top_k=5)[0]["citation_limit"] == 0
+
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {"assessments": [_assessment("1.1.1", ["MADE_UP"])]},
+    )
+    with pytest.raises(ValueError, match="not supplied.*1.1.1"):
+        assess_dimension_with_llm([packet], settings, top_k=5)
+
+
+def test_unknown_duplicate_and_too_many_citations_are_rejected(monkeypatch):
+    packet = _packet("1.1.1", 5)
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    for citation_ids, error in [
+        (["UNKNOWN"], "not supplied"),
+        (["1.1.1-C1", "1.1.1-C1"], "duplicate"),
+        (["1.1.1-C1", "1.1.1-C2", "1.1.1-C3"], "3 > 2"),
+    ]:
+        monkeypatch.setattr(
+            "phase05.assessment.complete_json",
+            lambda settings, messages, ids=citation_ids: {
+                "assessments": [_assessment("1.1.1", ids)]
+            },
+        )
+        with pytest.raises(ValueError, match=error):
+            assess_dimension_with_llm([packet], settings, top_k=2)
+
+
+def test_evidence_chunk_ids_must_be_json_array(monkeypatch):
+    packet = _packet("1.1.1", 2)
+    invalid = _assessment("1.1.1", [])
+    invalid["evidence_chunk_ids"] = "1.1.1-C1"
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {"assessments": [invalid]},
+    )
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    with pytest.raises(ValueError, match="invalid evidence_chunk_ids.*1.1.1"):
+        assess_dimension_with_llm([packet], settings, top_k=2)
+
+
+def test_citation_from_other_criterion_in_batch_is_rejected(monkeypatch):
+    packets = [_packet("1.1.1", 2), _packet("1.1.2", 2)]
+    monkeypatch.setattr(
+        "phase05.assessment.complete_json",
+        lambda settings, messages: {
+            "assessments": [
+                _assessment("1.1.1", ["1.1.2-C1"]),
+                _assessment("1.1.2", []),
+            ]
+        },
+    )
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    with pytest.raises(ValueError, match="not supplied.*1.1.1"):
+        assess_dimension_with_llm(packets, settings, top_k=2)
+
+
+def test_batch_size_does_not_change_per_criterion_limit(monkeypatch):
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+    one_packet = [_packet("1.1.1", 5)]
+    two_packets = [_packet("1.1.1", 5), _packet("1.1.2", 5)]
+
+    def fake_complete_json(settings, messages):
+        prompt = json.loads(messages[1]["content"])
+        return {
+            "assessments": [
+                _assessment(
+                    item["criterion"]["criterion_id"],
+                    [evidence["chunk_id"] for evidence in item["evidence"]],
+                )
+                for item in prompt["criteria"]
+            ]
+        }
+
+    monkeypatch.setattr("phase05.assessment.complete_json", fake_complete_json)
+
+    single_result = assess_dimension_with_llm(one_packet, settings, top_k=5)
+    batch_result = assess_dimension_with_llm(two_packets, settings, top_k=5)
+
+    assert single_result[0]["citation_limit"] == 5
+    assert [item["citation_limit"] for item in batch_result] == [5, 5]
+
+
+def test_single_assessment_uses_same_dynamic_citation_rule(monkeypatch):
+    packet = _packet("1.1.1", 3)
+    citation_ids = [item["chunk_id"] for item in packet["evidence"]]
+    captured = {}
+
+    def fake_complete_json(settings, messages):
+        captured["messages"] = messages
+        result = _assessment("1.1.1", citation_ids)
+        result.pop("criterion_id")
+        return result
+
+    monkeypatch.setattr("phase05.assessment.complete_json", fake_complete_json)
+    settings = LLMSettings("ollama", "qwen3:8b", "http://localhost:11434/v1", None, 512, True)
+
+    result = assess_with_llm(packet, settings, top_k=5)
+
+    assert result["citation_limit"] == 3
+    assert "at most 3 distinct IDs" in captured["messages"][0]["content"]

@@ -19,6 +19,8 @@ python -m phase05.cli --phase04 ".\data\output\DOC_DD3C35531469_phase04.json" --
 
 The result contains the rubric snapshot plus per-criterion score, confidence, evidence sufficiency, matched points, cited chunk IDs, strengths, and missing points. The scoring guide is loaded from the supplied `--rubric` file; Phase 05 does not infer scores from the number of retrieved evidence chunks. Phase 06 writes narrative only, while numeric roll-ups and Maturity Level are calculated by Python in Phase 07.
 
+The maximum number of selected citation IDs is dynamic. For each criterion it is `min(--top-k, distinct evidence chunks actually supplied)`. The model may cite fewer chunks and is instructed to select only directly relevant evidence. `--batch-size` controls criteria per request and does not affect this per-criterion citation limit. Phase 06/07 display selected evidence, while the complete retrieved evidence list remains in each immutable Phase 05 snapshot for audit.
+
 ## Hybrid retrieval
 
 Phase 05 defaults to `--retrieval hybrid`. It combines the existing lexical/Thai-trigram score with cosine similarity over Phase 04 embeddings. The default semantic weight is `0.7`. Each evidence item records `lexical_score`, `semantic_score`, and the combined `relevance_score`.

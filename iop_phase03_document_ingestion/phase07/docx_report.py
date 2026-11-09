@@ -131,7 +131,7 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
 
     citations = criterion.get("citations") or []
     if citations:
-        document.add_heading("หลักฐานอ้างอิง", level=3)
+        document.add_heading("หลักฐานที่โมเดลเลือกอ้างอิง", level=3)
         table = document.add_table(rows=1, cols=3)
         table.style = "Table Grid"
         _fill_table_header(table.rows[0], ["Chunk", "หน้า", "ข้อความหลักฐาน"])

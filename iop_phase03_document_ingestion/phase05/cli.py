@@ -293,6 +293,7 @@ def main() -> None:
                     max_attempts=args.retries + 1,
                     on_retry=report_retry,
                     scoring_guide=scoring_guide,
+                    top_k=args.top_k,
                 )
                 for position, assessment in zip(pending_positions, assessments):
                     batch_items[position]["assessment"] = assessment

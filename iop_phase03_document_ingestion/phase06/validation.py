@@ -48,6 +48,28 @@ def validate_summary_integrity(summary: dict[str, Any]) -> None:
                 raise ValueError(f"Duplicate criterion_id in Phase 06: {criterion_id}.")
             observed[criterion_id] = criterion.get("phase05_snapshot")
             evidence_ids = set(citation_map(criterion.get("phase05_snapshot", {})))
+            observed_citation_ids = [
+                citation.get("chunk_id")
+                for citation in criterion.get("citations", [])
+            ]
+            if len(observed_citation_ids) != len(set(observed_citation_ids)):
+                raise ValueError(f"Duplicate citations in Phase 06 for {criterion_id}.")
+            if "selected_evidence_count" in criterion:
+                assessment = (criterion.get("phase05_snapshot", {}).get("assessment") or {})
+                selected_ids = assessment.get("evidence_chunk_ids")
+                expected_citation_ids = (
+                    [str(chunk_id) for chunk_id in selected_ids]
+                    if isinstance(selected_ids, list)
+                    else list(citation_map(criterion.get("phase05_snapshot", {})))
+                )
+                if observed_citation_ids != expected_citation_ids:
+                    raise ValueError(
+                        f"Phase 06 citations do not match Phase 05 selected evidence for {criterion_id}."
+                    )
+                if criterion.get("selected_evidence_count") != len(observed_citation_ids):
+                    raise ValueError(f"Invalid selected_evidence_count for {criterion_id}.")
+                if criterion.get("retrieved_evidence_count") != len(evidence_ids):
+                    raise ValueError(f"Invalid retrieved_evidence_count for {criterion_id}.")
             for citation in criterion.get("citations", []):
                 if citation.get("chunk_id") not in evidence_ids:
                     raise ValueError(f"Citation {citation.get('chunk_id')} is not Phase 05 evidence for {criterion_id}.")

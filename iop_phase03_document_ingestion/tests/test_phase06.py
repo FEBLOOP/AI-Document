@@ -37,7 +37,7 @@ def test_integrity_rejects_changed_score_or_non_source_citation():
         validate_summary_integrity(changed_source)
     bad_citation = copy.deepcopy(summary)
     bad_citation["dimension_summaries"][0]["criterion_summaries"][0]["citations"] = [{"chunk_id": "NEW"}]
-    with pytest.raises(ValueError, match="not Phase 05 evidence"):
+    with pytest.raises(ValueError, match="do not match Phase 05 selected evidence|not Phase 05 evidence"):
         validate_summary_integrity(bad_citation)
 
 
@@ -83,3 +83,26 @@ def test_insufficient_evidence_checkpoint_is_displayed_as_assessed():
     criterion = summary["dimension_summaries"][0]["criterion_summaries"][0]
     assert criterion["status"] == "assessed"
     assert criterion["phase05_snapshot"]["status"] == "assessed_insufficient_evidence"
+
+
+def test_summary_uses_phase05_selected_evidence_and_preserves_all_retrieved_evidence():
+    phase05 = _phase05()
+    item = phase05["dimensions"][0]["criteria"][0]
+    item["evidence"] = [
+        {"chunk_id": "C1", "text": "selected one"},
+        {"chunk_id": "C2", "text": "retrieved only"},
+        {"chunk_id": "C3", "text": "selected three"},
+    ]
+    item["assessment"]["evidence_chunk_ids"] = ["C1", "C3"]
+
+    summary = build_summary(phase05, _good_examples())
+    criterion = summary["dimension_summaries"][0]["criterion_summaries"][0]
+
+    assert [citation["chunk_id"] for citation in criterion["citations"]] == ["C1", "C3"]
+    assert criterion["selected_evidence_count"] == 2
+    assert criterion["retrieved_evidence_count"] == 3
+    assert [
+        evidence["chunk_id"]
+        for evidence in criterion["phase05_snapshot"]["evidence"]
+    ] == ["C1", "C2", "C3"]
+    validate_summary_integrity(summary)

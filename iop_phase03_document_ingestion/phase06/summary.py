@@ -34,16 +34,31 @@ def _narrative(result: dict[str, Any]) -> str:
     return f"Phase 05 บันทึกผลการประเมินเกณฑ์ {criterion_id} ด้วยคะแนน {score}/5."
 
 
-def _criterion_summary(result: dict[str, Any], narrative: str | None = None, citation_ids: list[str] | None = None) -> dict[str, Any]:
+def _criterion_summary(
+    result: dict[str, Any],
+    narrative: str | None = None,
+) -> dict[str, Any]:
     snapshot = source_snapshot(result)
     assessment = snapshot["assessment"] or {}
     citations = citation_map(snapshot)
-    # A narrative may foreground a subset, but the output always retains every
-    # Phase 05 citation and its page/block provenance.
-    selected_ids = list(citations)
+    phase05_selected_ids = assessment.get("evidence_chunk_ids")
+    # New Phase 05 outputs explicitly distinguish selected citations from all
+    # retrieved candidates. Older outputs did not, so they retain all evidence.
+    selected_ids = (
+        [str(chunk_id) for chunk_id in phase05_selected_ids]
+        if isinstance(phase05_selected_ids, list)
+        else list(citations)
+    )
+    if len(selected_ids) != len(set(selected_ids)):
+        raise ValueError(
+            f"Phase 05 selected duplicate citations for "
+            f"{snapshot['criterion'].get('criterion_id')}."
+        )
     invalid = set(selected_ids) - set(citations)
     if invalid:
-        raise ValueError(f"Summary selected citations that are not in Phase 05: {sorted(invalid)}")
+        raise ValueError(
+            f"Phase 05 selected citations that are not retrieved evidence: {sorted(invalid)}"
+        )
     return {
         "criterion_id": snapshot["criterion"].get("criterion_id"),
         "component_id": snapshot["criterion"].get("component_id"),
@@ -61,6 +76,8 @@ def _criterion_summary(result: dict[str, Any], narrative: str | None = None, cit
         "strengths": _items(assessment.get("strengths")),
         "areas_for_improvement": _items(assessment.get("missing_points")),
         "citations": [citations[chunk_id] for chunk_id in selected_ids],
+        "selected_evidence_count": len(selected_ids),
+        "retrieved_evidence_count": len(citations),
         "phase05_snapshot": snapshot,
     }
 
@@ -96,9 +113,9 @@ def _template_overall(dimensions: list[dict[str, Any]], overall_style: dict[str,
 
 def _llm_narratives(phase05: dict[str, Any], styles: dict[str, Any], settings: LLMSettings) -> dict[str, Any]:
     packet = {"phase05": phase05, "good_example_styles": styles,
-              "task": "Write only summary prose and evidence chunk IDs. Do not score, reassess, add strengths, add missing points, add numbers, or add facts. Use only supplied Phase 05 assessment fields and evidence. Each cited chunk_id must come from that criterion's evidence."}
+              "task": "Write only summary prose. Do not select citations, score, reassess, add strengths, add missing points, add numbers, or add facts. Use only supplied Phase 05 assessment fields and evidence. Phase 05 evidence_chunk_ids are immutable and control report citations."}
     return complete_json(settings, [
-            {"role": "system", "content": "You are a Thai assessment-report editor. Good Examples control only structure and tone. Phase 05 is immutable. Return JSON: overall_summary and dimensions [{dimension_id, summary, criteria:[{criterion_id, summary, citation_chunk_ids}]}]."},
+            {"role": "system", "content": "You are a Thai assessment-report editor. Good Examples control only structure and tone. Phase 05 scores and selected evidence are immutable. Return JSON: overall_summary and dimensions [{dimension_id, summary, criteria:[{criterion_id, summary}]}]."},
             {"role": "user", "content": json.dumps(packet, ensure_ascii=False)},
         ])
 
@@ -124,7 +141,6 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
                 _criterion_summary(
                     original,
                     narrative=str(llm_criteria.get(original.get("criterion", {}).get("criterion_id"), {}).get("summary", _narrative(original))),
-                    citation_ids=llm_criteria.get(original.get("criterion", {}).get("criterion_id"), {}).get("citation_chunk_ids", list(citation_map(original))),
                 )
                 for original in dimension.get("criteria", [])
             ]

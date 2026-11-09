@@ -11,6 +11,81 @@ def _guide(scoring_guide: dict[str, str] | None) -> dict[str, str]:
     return scoring_guide or DEFAULT_SCORING_GUIDE
 
 
+def _supplied_evidence_ids(packet: dict[str, Any]) -> list[str]:
+    """Return distinct, non-empty evidence IDs in their supplied order."""
+    result: list[str] = []
+    for item in packet.get("evidence", []):
+        chunk_id = item.get("chunk_id")
+        if chunk_id is None:
+            continue
+        normalized = str(chunk_id).strip()
+        if normalized and normalized not in result:
+            result.append(normalized)
+    return result
+
+
+def _citation_limit(packet: dict[str, Any], top_k: int | None) -> int:
+    supplied_count = len(_supplied_evidence_ids(packet))
+    requested = supplied_count if top_k is None else top_k
+    if requested < 0:
+        raise ValueError("top_k must be zero or greater for citation validation.")
+    return min(requested, supplied_count)
+
+
+def _validate_assessment_fields(
+    assessment: dict[str, Any],
+    packet: dict[str, Any],
+    top_k: int | None,
+    criterion_id: str,
+) -> dict[str, Any]:
+    score = assessment.get("score")
+    if isinstance(score, bool) or not isinstance(score, int) or not 1 <= score <= 5:
+        raise ValueError(f"LLM returned invalid score for criterion {criterion_id}.")
+
+    assessment["confidence"] = max(
+        0, min(1, float(assessment.get("confidence", 0)))
+    )
+    sufficiency = str(assessment.get("evidence_sufficiency", "")).lower()
+    if sufficiency in {"sufficient", "insufficient"}:
+        assessment["evidence_sufficiency"] = sufficiency
+    else:
+        assessment.pop("evidence_sufficiency", None)
+
+    for field in ("evidence_chunk_ids", "matched_points", "strengths", "missing_points"):
+        if not isinstance(assessment.get(field), list):
+            raise ValueError(
+                f"LLM returned invalid {field} for criterion {criterion_id}."
+            )
+
+    citation_ids = assessment["evidence_chunk_ids"]
+    if any(not isinstance(item, str) or not item.strip() for item in citation_ids):
+        raise ValueError(
+            f"LLM returned non-string or empty evidence_chunk_ids for criterion {criterion_id}."
+        )
+    if len(citation_ids) != len(set(citation_ids)):
+        raise ValueError(
+            f"LLM returned duplicate evidence_chunk_ids for criterion {criterion_id}: "
+            f"{len(citation_ids)} IDs are not distinct."
+        )
+
+    supplied_ids = set(_supplied_evidence_ids(packet))
+    unknown_ids = set(citation_ids) - supplied_ids
+    if unknown_ids:
+        raise ValueError(
+            f"LLM returned evidence_chunk_ids not supplied for criterion {criterion_id}: "
+            f"{sorted(unknown_ids)}."
+        )
+
+    allowed_citations = _citation_limit(packet, top_k)
+    if len(citation_ids) > allowed_citations:
+        raise ValueError(
+            f"Too many evidence_chunk_ids for criterion {criterion_id}: "
+            f"{len(citation_ids)} > {allowed_citations}."
+        )
+    assessment["citation_limit"] = allowed_citations
+    return assessment
+
+
 def review_packet(
     criterion: dict[str, Any],
     evidence: list[dict[str, Any]],
@@ -47,16 +122,23 @@ def assess_with_llm(
     packet: dict[str, Any],
     settings: LLMSettings,
     scoring_guide: dict[str, str] | None = None,
+    top_k: int | None = None,
 ) -> dict[str, Any]:
-    prompt = json.dumps({"scoring_guide": _guide(scoring_guide), **packet}, ensure_ascii=False)
+    allowed_citations = _citation_limit(packet, top_k)
+    prompt_packet = {
+        **packet,
+        "citation_limit": allowed_citations,
+    }
+    prompt = json.dumps(
+        {"scoring_guide": _guide(scoring_guide), **prompt_packet},
+        ensure_ascii=False,
+    )
     assessment = complete_json(settings, [
-        {"role": "system", "content": "You are a careful Thai IOP assessor. Evaluate actual implementation, organizational coverage, continuity, systematic practice, sustainability, and role-model evidence according to the supplied scoring_guide. Evidence count alone must never determine a score. Distinguish insufficient evidence from evidence that confirms no implementation. Score 5 requires explicit evidence of systematic, sustainable, role-model practice. Return only one compact, valid JSON object with score (integer 1-5), confidence (0-1), rationale_th, evidence_chunk_ids, matched_points, strengths, missing_points. You may optionally include evidence_sufficiency as sufficient or insufficient when it can be determined. Use only supplied evidence and never invent facts. No Markdown and no text outside JSON."},
+        {"role": "system", "content": f"You are a careful Thai IOP assessor. Evaluate actual implementation, organizational coverage, continuity, systematic practice, sustainability, and role-model evidence according to the supplied scoring_guide. Evidence count alone must never determine a score. Distinguish insufficient evidence from evidence that confirms no implementation. Score 5 requires explicit evidence of systematic, sustainable, role-model practice. Return only one compact, valid JSON object with score (integer 1-5), confidence (0-1), rationale_th, evidence_chunk_ids, matched_points, strengths, missing_points. evidence_chunk_ids may contain at most {allowed_citations} distinct IDs from the supplied evidence. Select only directly relevant evidence; do not add IDs merely to reach the limit and never invent IDs. You may optionally include evidence_sufficiency as sufficient or insufficient when it can be determined. Use only supplied evidence and never invent facts. No Markdown and no text outside JSON."},
         {"role": "user", "content": prompt},
     ])
-    if not isinstance(assessment.get("score"), int) or not 1 <= assessment["score"] <= 5:
-        raise ValueError("LLM returned an invalid score.")
-    assessment["confidence"] = max(0, min(1, float(assessment.get("confidence", 0))))
-    return assessment
+    criterion_id = str(packet.get("criterion", {}).get("criterion_id", "<single>"))
+    return _validate_assessment_fields(assessment, packet, top_k, criterion_id)
 
 
 def assess_dimension_with_llm(
@@ -65,6 +147,7 @@ def assess_dimension_with_llm(
     max_attempts: int = 1,
     on_retry: Callable[[int, Exception], None] | None = None,
     scoring_guide: dict[str, str] | None = None,
+    top_k: int | None = None,
 ) -> list[dict[str, Any]]:
     """Assess a mini-batch and retry malformed or incomplete JSON responses."""
     if max_attempts < 1:
@@ -73,7 +156,12 @@ def assess_dimension_with_llm(
     last_error: ValueError | None = None
     for attempt in range(1, max_attempts + 1):
         try:
-            return _assess_dimension_once(packets, settings, _guide(scoring_guide))
+            return _assess_dimension_once(
+                packets,
+                settings,
+                _guide(scoring_guide),
+                top_k,
+            )
         except ValueError as exc:
             last_error = exc
             if attempt == max_attempts:
@@ -91,11 +179,26 @@ def _assess_dimension_once(
     packets: list[dict[str, Any]],
     settings: LLMSettings,
     scoring_guide: dict[str, str],
+    top_k: int | None,
 ) -> list[dict[str, Any]]:
+    prompt_packets = [
+        {**packet, "citation_limit": _citation_limit(packet, top_k)}
+        for packet in packets
+    ]
+    requested_top_k = (
+        max((_citation_limit(packet, None) for packet in packets), default=0)
+        if top_k is None
+        else top_k
+    )
+    limit_summary = ", ".join(
+        f"{packet['criterion']['criterion_id']}={packet['citation_limit']}"
+        for packet in prompt_packets
+    )
     prompt = json.dumps(
         {
             "scoring_guide": scoring_guide,
-            "criteria": packets,
+            "requested_top_k": requested_top_k,
+            "criteria": prompt_packets,
         },
         ensure_ascii=False,
     )
@@ -123,7 +226,12 @@ def _assess_dimension_once(
                     "score must be integer 1-5 and confidence must be 0-1. "
                     "Use only supplied evidence. Never invent evidence. "
                     "rationale_th must be one short Thai sentence. "
-                    "evidence_chunk_ids must contain at most 2 supplied IDs. "
+                    f"Requested top_k is {requested_top_k}. Citation limits per criterion are: "
+                    f"{limit_summary}. evidence_chunk_ids may contain at most the citation_limit "
+                    "distinct IDs from the evidence supplied for that criterion. Select only "
+                    "evidence chunks that directly support the assessment. Do not include "
+                    "irrelevant chunks just to reach the maximum. Never invent chunk IDs or "
+                    "use evidence supplied for another criterion. "
                     "strengths and missing_points must each contain at most 2 short phrases. "
                     "evidence_sufficiency is optional; when included it must be sufficient or insufficient. "
                     "No Markdown and no text outside JSON."
@@ -160,39 +268,17 @@ def _assess_dimension_once(
                 f"LLM returned duplicate assessment for criterion {criterion_id}."
             )
 
-        score = assessment.get("score")
-        if not isinstance(score, int) or not 1 <= score <= 5:
-            raise ValueError(
-                f"LLM returned invalid score for criterion {criterion_id}."
-            )
-
-        assessment["confidence"] = max(
-            0, min(1, float(assessment.get("confidence", 0)))
-        )
-        sufficiency = str(assessment.get("evidence_sufficiency", "")).lower()
-        if sufficiency in {"sufficient", "insufficient"}:
-            assessment["evidence_sufficiency"] = sufficiency
-        else:
-            assessment.pop("evidence_sufficiency", None)
-        for field in ("evidence_chunk_ids", "matched_points", "strengths", "missing_points"):
-            if not isinstance(assessment.get(field), list):
-                raise ValueError(
-                    f"LLM returned invalid {field} for criterion {criterion_id}."
-                )
-        supplied_evidence_ids = {
-            str(item.get("chunk_id"))
+        packet = next(
+            packet
             for packet in packets
             if str(packet["criterion"]["criterion_id"]) == criterion_id
-            for item in packet.get("evidence", [])
-            if item.get("chunk_id")
-        }
-        unknown_evidence_ids = set(map(str, assessment["evidence_chunk_ids"])) - supplied_evidence_ids
-        if unknown_evidence_ids:
-            raise ValueError(
-                f"LLM invented evidence for criterion {criterion_id}: "
-                f"{sorted(unknown_evidence_ids)}"
-            )
-        by_id[criterion_id] = assessment
+        )
+        by_id[criterion_id] = _validate_assessment_fields(
+            assessment,
+            packet,
+            top_k,
+            criterion_id,
+        )
 
     ordered = []
     for packet in packets:
