@@ -12,3 +12,11 @@ venv/
 
 # Environment Variables
 .env
+.vscode/
+.env
+__pycache__/
+*.py[cod]
+tmp/
+output/pdf/
+*.tar
+*.bundle
