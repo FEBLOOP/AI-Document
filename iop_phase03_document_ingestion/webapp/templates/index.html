@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IOP Assessment</title>
-  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="static/app.css">
 </head>
 <body>
   <main class="shell">
@@ -115,7 +115,7 @@
       }
       button.disabled = true;
       button.textContent = 'กำลังอัปโหลด…';
-      const response = await fetch('/api/jobs', { method: 'POST', body: new FormData(form) });
+      const response = await fetch('api/jobs', { method: 'POST', body: new FormData(form) });
       const result = await response.json();
       if (!response.ok) { alert(result.detail || 'อัปโหลดไม่สำเร็จ'); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร'; return; }
       jobPanel.classList.remove('hidden');
@@ -123,7 +123,7 @@
       poll(result.id);
     });
     async function poll(id) {
-      const job = await (await fetch(`/api/jobs/${id}`)).json();
+      const job = await (await fetch(`api/jobs/${id}`)).json();
       document.querySelector('#stage').textContent = job.stage;
       document.querySelector('#message').textContent = job.message;
       document.querySelector('#percent').textContent = `${job.progress}%`;
@@ -146,7 +146,7 @@
           phase07_scoring: 'ดาวน์โหลดคะแนน PHASE07 JSON',
           report_pdf: 'ดาวน์โหลดรายงาน PDF', report_docx: 'ดาวน์โหลดรายงาน Word',
         };
-        downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">${labels[name]}</a>`).join('');
+        downloads.innerHTML = names.map(name => `<a href="api/jobs/${id}/output/${name}">${labels[name]}</a>`).join('');
         downloads.classList.remove('hidden');
       }
       if (job.status === 'failed') { clearInterval(timer); button.disabled = false; button.textContent = 'ลองอีกครั้ง'; }

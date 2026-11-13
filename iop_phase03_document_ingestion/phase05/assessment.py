@@ -57,31 +57,30 @@ def _validate_assessment_fields(
                 f"LLM returned invalid {field} for criterion {criterion_id}."
             )
 
-    citation_ids = assessment["evidence_chunk_ids"]
-    if any(not isinstance(item, str) or not item.strip() for item in citation_ids):
+    raw_ids = assessment["evidence_chunk_ids"]
+    if any(not isinstance(item, str) or not item.strip() for item in raw_ids):
         raise ValueError(
             f"LLM returned non-string or empty evidence_chunk_ids for criterion {criterion_id}."
         )
-    if len(citation_ids) != len(set(citation_ids)):
-        raise ValueError(
-            f"LLM returned duplicate evidence_chunk_ids for criterion {criterion_id}: "
-            f"{len(citation_ids)} IDs are not distinct."
-        )
 
+    # Deduplicate while preserving order
+    citation_ids = list(dict.fromkeys(item.strip() for item in raw_ids))
+
+    # Drop unsupplied or cross-criterion chunk IDs with a warning instead of aborting
     supplied_ids = set(_supplied_evidence_ids(packet))
-    unknown_ids = set(citation_ids) - supplied_ids
+    unknown_ids = [cid for cid in citation_ids if cid not in supplied_ids]
     if unknown_ids:
-        raise ValueError(
-            f"LLM returned evidence_chunk_ids not supplied for criterion {criterion_id}: "
-            f"{sorted(unknown_ids)}."
+        print(
+            f"[WARN] Dropping unsupplied evidence_chunk_ids for criterion {criterion_id}: {unknown_ids}",
+            flush=True,
         )
+        citation_ids = [cid for cid in citation_ids if cid in supplied_ids]
 
     allowed_citations = _citation_limit(packet, top_k)
     if len(citation_ids) > allowed_citations:
-        raise ValueError(
-            f"Too many evidence_chunk_ids for criterion {criterion_id}: "
-            f"{len(citation_ids)} > {allowed_citations}."
-        )
+        citation_ids = citation_ids[:allowed_citations]
+
+    assessment["evidence_chunk_ids"] = citation_ids
     assessment["citation_limit"] = allowed_citations
     return assessment
 
