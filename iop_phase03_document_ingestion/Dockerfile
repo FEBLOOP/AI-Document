@@ -1,7 +1,10 @@
-﻿FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
-# Install Tesseract OCR + Thai/English language data for pytesseract
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Switch Debian APT mirrors from HTTP to HTTPS to bypass HTTP proxy/CDN corruption
+RUN sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources && \
+    apt-get -o Acquire::https::Verify-Peer=false -o Acquire::Retries=3 update && \
+    apt-get -o Acquire::https::Verify-Peer=false -o Acquire::Retries=3 install -y --no-install-recommends \
+    ca-certificates \
     tesseract-ocr \
     tesseract-ocr-tha \
     tesseract-ocr-eng \
