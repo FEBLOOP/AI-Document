@@ -10,7 +10,14 @@ from llm import LLMSettings, complete_json, load_llm_settings
 
 from . import SCHEMA_VERSION
 from .styles import load_good_example_styles
-from .validation import assessment_id, citation_map, snapshot_digest, source_snapshot, validate_summary_integrity
+from .validation import (
+    assessment_id,
+    citation_map,
+    normalized_strength_evidence_mapping,
+    snapshot_digest,
+    source_snapshot,
+    validate_summary_integrity,
+)
 
 
 def _items(value: Any) -> list[str]:
@@ -59,6 +66,12 @@ def _criterion_summary(
         raise ValueError(
             f"Phase 05 selected citations that are not retrieved evidence: {sorted(invalid)}"
         )
+    criterion_id = str(snapshot["criterion"].get("criterion_id", ""))
+    strength_mapping = normalized_strength_evidence_mapping(
+        assessment,
+        selected_ids,
+        criterion_id,
+    )
     return {
         "criterion_id": snapshot["criterion"].get("criterion_id"),
         "component_id": snapshot["criterion"].get("component_id"),
@@ -74,6 +87,7 @@ def _criterion_summary(
         "summary": narrative if narrative is not None else _narrative(result),
         "matched_points": _items(assessment.get("matched_points")),
         "strengths": _items(assessment.get("strengths")),
+        "strength_evidence_mapping": strength_mapping,
         "areas_for_improvement": _items(assessment.get("missing_points")),
         "citations": [citations[chunk_id] for chunk_id in selected_ids],
         "selected_evidence_count": len(selected_ids),

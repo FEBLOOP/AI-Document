@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import hashlib
 import shutil
 import subprocess
 import sys
@@ -12,7 +13,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import BackgroundTasks, Body, FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -23,11 +24,13 @@ from phase06.summary import build_summary
 from phase06.validation import validate_summary_integrity
 from phase07.report import build_report
 from phase07.scoring import calculate_scoring
+from webapp.file_manager import FileManager, FileManagerError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "input" / "uploads"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
+SOURCE_INDEX_PATH = INPUT_DIR / ".file-manager-metadata.json"
 RUBRIC_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "iop_reference.json"
 GOOD_EXAMPLES_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "good_examples_kb.json"
 LLM_PROVIDERS = {"none", "anthropic", "huggingface", "ollama", "openai"}
@@ -43,6 +46,96 @@ WEB_LLM_TOP_K = 2
 WEB_SEMANTIC_WEIGHT = 0.7
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = Lock()
+SOURCE_INDEX_LOCK = Lock()
+
+
+def _configured_output_roots() -> list[Path]:
+    configured = os.getenv("IOP_FILE_MANAGER_OUTPUT_ROOTS", "").strip()
+    if not configured:
+        return [OUTPUT_DIR]
+    roots: list[Path] = []
+    for value in configured.split(os.pathsep):
+        if not value.strip():
+            continue
+        candidate = Path(value).expanduser()
+        if not candidate.is_absolute():
+            raise RuntimeError("IOP_FILE_MANAGER_OUTPUT_ROOTS must contain absolute paths")
+        resolved = candidate.resolve()
+        protected = [PROJECT_ROOT.resolve(), INPUT_DIR.resolve(), RUBRIC_PATH.resolve(), GOOD_EXAMPLES_PATH.resolve()]
+        if any(
+            resolved == item or resolved in item.parents or item in resolved.parents
+            for item in protected
+        ):
+            raise RuntimeError(f"Unsafe managed output root: {resolved}")
+        roots.append(resolved)
+    if not roots:
+        raise RuntimeError("IOP_FILE_MANAGER_OUTPUT_ROOTS did not contain a valid path")
+    return roots
+
+
+def _file_has_active_job(document_id: str | None, path: Path) -> bool:
+    candidate = path.resolve()
+    with JOBS_LOCK:
+        for job in JOBS.values():
+            if job.get("status") not in {"queued", "running"}:
+                continue
+            if document_id and job.get("document_id") == document_id:
+                return True
+            for raw_path in job.get("paths", {}).values():
+                try:
+                    if raw_path and Path(raw_path).resolve() == candidate:
+                        return True
+                except (OSError, TypeError, ValueError):
+                    continue
+    return False
+
+
+def _source_index() -> dict[str, str]:
+    with SOURCE_INDEX_LOCK:
+        try:
+            value = json.loads(SOURCE_INDEX_PATH.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+            return {}
+    return {
+        stored: original
+        for stored, original in value.items()
+        if isinstance(stored, str) and Path(stored).name == stored
+        and isinstance(original, str) and Path(original).name == original
+    } if isinstance(value, dict) else {}
+
+
+def _source_original_name(path: Path) -> str | None:
+    return _source_index().get(path.name)
+
+
+def _record_source_name(stored_name: str, original_name: str) -> None:
+    with SOURCE_INDEX_LOCK:
+        try:
+            current = json.loads(SOURCE_INDEX_PATH.read_text(encoding="utf-8"))
+            if not isinstance(current, dict):
+                current = {}
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+            current = {}
+        current[stored_name] = original_name
+        temporary = SOURCE_INDEX_PATH.with_suffix(".tmp")
+        temporary.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary.replace(SOURCE_INDEX_PATH)
+
+
+_id_secret_text = os.getenv("IOP_FILE_MANAGER_ID_SECRET", "").strip()
+_id_secret = (
+    _id_secret_text.encode("utf-8")
+    if _id_secret_text
+    else hashlib.sha256(f"ai-document-file-manager:{PROJECT_ROOT.resolve()}".encode()).digest()
+)
+FILE_MANAGER = FileManager(
+    _configured_output_roots(),
+    INPUT_DIR,
+    access_token=os.getenv("IOP_FILE_MANAGER_ACCESS_TOKEN"),
+    active_document=_file_has_active_job,
+    source_name_for_path=_source_original_name,
+    id_secret=_id_secret,
+)
 
 app = FastAPI(title="IOP AI Document Assessment", version="1.0")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
@@ -76,6 +169,13 @@ def _run_pipeline(
     try:
         _update_job(job_id, status="running", stage="phase03", message="กำลังอ่านข้อความจาก PDF และ OCR เมื่อจำเป็น", progress=20)
         phase03_path, phase03 = ingest_pdf(str(source_path), str(OUTPUT_DIR))
+        _update_job(
+            job_id,
+            document_id=phase03["document_id"],
+            page_count=phase03["page_count"],
+            ocr_used=phase03["ocr_used"],
+            paths={"source": str(source_path), "phase03": str(phase03_path)},
+        )
 
         phase04_settings = Settings.load()
         create_embeddings = phase04_settings.embedding_provider != "none"
@@ -206,7 +306,7 @@ def _run_pipeline(
                 build_report(phase06, report_path, rubric)
                 report_paths[f"report_{extension}"] = report_path
 
-        paths = {"phase03": str(phase03_path), "phase04": str(phase04_path)}
+        paths = {"source": str(source_path), "phase03": str(phase03_path), "phase04": str(phase04_path)}
         if phase05_path:
             paths["phase05"] = str(phase05_path)
             paths["phase06"] = str(phase06_path)
@@ -276,6 +376,7 @@ async def create_job(
     with source_path.open("wb") as target:
         shutil.copyfileobj(file.file, target)
     await file.close()
+    _record_source_name(source_path.name, Path(file.filename).name)
 
     with JOBS_LOCK:
         JOBS[job_id] = {
@@ -291,7 +392,7 @@ async def create_job(
             "progress": 0,
             "created_at": _now(),
             "updated_at": _now(),
-            "paths": {},
+            "paths": {"source": str(source_path)},
         }
     background_tasks.add_task(
         _run_pipeline,
@@ -325,3 +426,78 @@ def download_output(job_id: str, output_name: str) -> FileResponse:
         ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     }
     return FileResponse(path, media_type=media_types.get(path.suffix.lower()), filename=path.name)
+
+
+def _file_manager_http_error(exc: FileManagerError) -> HTTPException:
+    return HTTPException(status_code=exc.status_code, detail={"code": exc.code, "message": str(exc)})
+
+
+@app.get("/api/files")
+def list_managed_files() -> dict[str, Any]:
+    return FILE_MANAGER.inventory()
+
+
+@app.post("/api/files/access/check")
+def check_file_manager_access(
+    authorization: str | None = Header(default=None),
+) -> dict[str, bool]:
+    try:
+        FILE_MANAGER.authorize(authorization)
+    except FileManagerError as exc:
+        raise _file_manager_http_error(exc) from exc
+    return {"authorized": True}
+
+
+@app.get("/api/files/{file_id}/download")
+def download_managed_file(file_id: str) -> FileResponse:
+    try:
+        item = FILE_MANAGER.locate(file_id)
+    except FileManagerError as exc:
+        raise _file_manager_http_error(exc) from exc
+    media_types = {
+        "json": "application/json",
+        "jsonl": "application/x-ndjson",
+        "pdf": "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }
+    return FileResponse(item.path, media_type=media_types.get(item.extension), filename=item.filename)
+
+
+@app.delete("/api/files/{file_id}")
+def delete_managed_file(
+    file_id: str,
+    payload: dict[str, Any] = Body(default_factory=dict),
+    authorization: str | None = Header(default=None),
+) -> dict[str, Any]:
+    try:
+        return FILE_MANAGER.delete_one(file_id, authorization, confirmed=payload.get("confirmed") is True)
+    except FileManagerError as exc:
+        raise _file_manager_http_error(exc) from exc
+
+
+@app.post("/api/documents/{document_id}/outputs/delete/preview")
+def preview_document_output_deletion(
+    document_id: str,
+    authorization: str | None = Header(default=None),
+) -> dict[str, Any]:
+    try:
+        return FILE_MANAGER.bulk_preview(document_id, authorization)
+    except FileManagerError as exc:
+        raise _file_manager_http_error(exc) from exc
+
+
+@app.post("/api/documents/{document_id}/outputs/delete")
+def delete_document_outputs(
+    document_id: str,
+    payload: dict[str, Any] = Body(default_factory=dict),
+    authorization: str | None = Header(default=None),
+) -> dict[str, Any]:
+    try:
+        return FILE_MANAGER.bulk_delete(
+            document_id,
+            authorization,
+            str(payload.get("confirmation_token", "")),
+            confirmed=payload.get("confirmed") is True,
+        )
+    except FileManagerError as exc:
+        raise _file_manager_http_error(exc) from exc

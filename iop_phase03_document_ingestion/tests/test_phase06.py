@@ -106,3 +106,42 @@ def test_summary_uses_phase05_selected_evidence_and_preserves_all_retrieved_evid
         for evidence in criterion["phase05_snapshot"]["evidence"]
     ] == ["C1", "C2", "C3"]
     validate_summary_integrity(summary)
+
+
+def test_summary_preserves_strength_evidence_mapping_and_rejects_changes():
+    phase05 = _phase05()
+    item = phase05["dimensions"][0]["criteria"][0]
+    item["evidence"] = [
+        {"chunk_id": "C1", "text": "หลักฐานหนึ่ง"},
+        {"chunk_id": "C2", "text": "หลักฐานสอง"},
+    ]
+    item["assessment"]["evidence_chunk_ids"] = ["C1", "C2"]
+    item["assessment"]["strength_evidence_mapping"] = [
+        {"strength": "มีนโยบาย", "evidence_chunk_ids": ["C1", "C2", "C1"]},
+    ]
+
+    summary = build_summary(phase05, _good_examples())
+    criterion = summary["dimension_summaries"][0]["criterion_summaries"][0]
+
+    assert criterion["strength_evidence_mapping"] == [
+        {"strength": "มีนโยบาย", "evidence_chunk_ids": ["C1", "C2"]},
+    ]
+    assert criterion["phase05_snapshot"]["assessment"]["strength_evidence_mapping"] == [
+        {"strength": "มีนโยบาย", "evidence_chunk_ids": ["C1", "C2", "C1"]},
+    ]
+    validate_summary_integrity(summary)
+
+    changed = copy.deepcopy(summary)
+    changed["dimension_summaries"][0]["criterion_summaries"][0][
+        "strength_evidence_mapping"
+    ][0]["evidence_chunk_ids"] = ["C2"]
+    with pytest.raises(ValueError, match="changed strength_evidence_mapping"):
+        validate_summary_integrity(changed)
+
+
+def test_legacy_phase05_without_strength_mapping_remains_valid():
+    summary = build_summary(_phase05(), _good_examples())
+    criterion = summary["dimension_summaries"][0]["criterion_summaries"][0]
+
+    assert criterion["strength_evidence_mapping"] == []
+    validate_summary_integrity(summary)

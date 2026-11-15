@@ -7,6 +7,33 @@
   <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
+  <button id="files-toggle" class="files-toggle" type="button" aria-controls="file-sidebar" aria-expanded="false">☰ ไฟล์</button>
+  <div id="drawer-overlay" class="drawer-overlay hidden" aria-hidden="true"></div>
+  <div class="app-layout">
+  <aside id="file-sidebar" class="file-sidebar" aria-label="ตัวจัดการไฟล์">
+    <div class="sidebar-heading">
+      <div><p class="eyebrow">MANAGED STORAGE</p><h2>ไฟล์เอกสาร</h2></div>
+      <button id="files-close" class="icon-button" type="button" aria-label="ปิดตัวจัดการไฟล์">×</button>
+    </div>
+    <label class="sidebar-search" for="file-search">
+      <span class="sr-only">ค้นหา Document ID หรือชื่อไฟล์</span>
+      <input id="file-search" type="search" placeholder="ค้นหา Document ID / ชื่อไฟล์">
+    </label>
+    <div class="storage-row">
+      <span id="storage-summary">กำลังโหลด…</span>
+      <button id="files-refresh" class="text-button" type="button">รีเฟรช</button>
+    </div>
+    <section id="file-access" class="access-box hidden" aria-label="สิทธิ์ลบไฟล์">
+      <p id="access-message"></p>
+      <div id="access-controls" class="access-controls hidden">
+        <input id="access-token" type="password" autocomplete="off" placeholder="Shared Access Token" aria-label="Shared Access Token">
+        <button id="access-unlock" type="button">ปลดล็อกการลบ</button>
+      </div>
+    </section>
+    <p id="files-status" class="sidebar-status" role="status" aria-live="polite"></p>
+    <div id="file-tree" class="file-tree"></div>
+  </aside>
+
   <main class="shell">
     <header>
       <p class="eyebrow">IOP · DOCUMENT INTELLIGENCE</p>
@@ -75,6 +102,7 @@
       <div id="downloads" class="downloads hidden"></div>
     </section>
   </main>
+  </div>
   <script>
     const form = document.querySelector('#upload-form');
     const fileInput = document.querySelector('#pdf');
@@ -88,6 +116,14 @@
     const reportFormatField = document.querySelector('#report-format-field');
     const dimensionInputs = [...document.querySelectorAll('input[name="dimensions"]')];
     const jobPanel = document.querySelector('#job');
+    const fileTree = document.querySelector('#file-tree');
+    const filesStatus = document.querySelector('#files-status');
+    const fileSearch = document.querySelector('#file-search');
+    const sidebar = document.querySelector('#file-sidebar');
+    const drawerOverlay = document.querySelector('#drawer-overlay');
+    let fileInventory = [];
+    let deletionConfigured = false;
+    let deletionAuthorized = false;
     let timer;
     fileInput.addEventListener('change', () => fileName.textContent = fileInput.files[0]?.name || 'รองรับเอกสารบริษัทภาษาไทยและอังกฤษ');
     provider.addEventListener('change', () => {
@@ -148,9 +184,153 @@
         };
         downloads.innerHTML = names.map(name => `<a href="/api/jobs/${id}/output/${name}">${labels[name]}</a>`).join('');
         downloads.classList.remove('hidden');
+        loadFiles();
       }
       if (job.status === 'failed') { clearInterval(timer); button.disabled = false; button.textContent = 'ลองอีกครั้ง'; }
     }
+
+    function formatBytes(bytes) {
+      if (!bytes) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      return `${(bytes / (1024 ** index)).toFixed(index ? 1 : 0)} ${units[index]}`;
+    }
+    function authHeaders() {
+      const token = sessionStorage.getItem('iopFileManagerToken');
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+    function apiMessage(result, fallback) {
+      return result?.detail?.message || result?.detail || fallback;
+    }
+    function setDrawer(open) {
+      sidebar.classList.toggle('open', open);
+      drawerOverlay.classList.toggle('hidden', !open);
+      document.querySelector('#files-toggle').setAttribute('aria-expanded', String(open));
+      if (open) fileSearch.focus();
+    }
+    document.querySelector('#files-toggle').addEventListener('click', () => setDrawer(true));
+    document.querySelector('#files-close').addEventListener('click', () => setDrawer(false));
+    drawerOverlay.addEventListener('click', () => setDrawer(false));
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') setDrawer(false); });
+
+    async function loadFiles() {
+      filesStatus.textContent = 'กำลังอ่านรายการไฟล์…';
+      try {
+        const response = await fetch('/api/files');
+        const result = await response.json();
+        if (!response.ok) throw new Error(apiMessage(result, 'โหลดรายการไฟล์ไม่สำเร็จ'));
+        fileInventory = result.files;
+        deletionConfigured = result.deletion.enabled;
+        document.querySelector('#storage-summary').textContent = `ไฟล์ที่จัดการ ${result.storage.file_count} · ${formatBytes(result.storage.managed_bytes)}`;
+        const accessBox = document.querySelector('#file-access');
+        const accessControls = document.querySelector('#access-controls');
+        const accessMessage = document.querySelector('#access-message');
+        accessBox.classList.remove('hidden');
+        if (!deletionConfigured) {
+          deletionAuthorized = false;
+          accessMessage.textContent = result.deletion.reason;
+          accessControls.classList.add('hidden');
+        } else if (!deletionAuthorized) {
+          accessMessage.textContent = 'ดาวน์โหลดได้ตามปกติ · ต้องปลดล็อกก่อนลบ';
+          accessControls.classList.remove('hidden');
+        } else {
+          accessMessage.textContent = 'ปลดล็อกการลบแล้วสำหรับ browser session นี้';
+          accessControls.classList.add('hidden');
+        }
+        filesStatus.textContent = fileInventory.length ? '' : 'ยังไม่มีไฟล์ใน Managed Storage';
+        renderFiles();
+      } catch (error) {
+        filesStatus.textContent = error.message;
+        fileTree.replaceChildren();
+      }
+    }
+    function renderFiles() {
+      const query = fileSearch.value.trim().toLocaleLowerCase('th');
+      const matching = fileInventory.filter(file => [file.document_id, file.filename, file.original_filename]
+        .filter(Boolean).some(value => value.toLocaleLowerCase('th').includes(query)));
+      const groups = new Map();
+      matching.forEach(file => {
+        const key = file.document_id || 'uncategorized';
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(file);
+      });
+      fileTree.replaceChildren();
+      if (!matching.length && fileInventory.length) {
+        const empty = document.createElement('p'); empty.className = 'sidebar-status'; empty.textContent = 'ไม่พบไฟล์ที่ค้นหา'; fileTree.append(empty); return;
+      }
+      groups.forEach((files, documentId) => fileTree.append(buildDocumentGroup(documentId, files)));
+    }
+    function buildDocumentGroup(documentId, files) {
+      const details = document.createElement('details'); details.className = 'document-group'; details.open = true;
+      const summary = document.createElement('summary');
+      const label = document.createElement('span'); label.textContent = documentId === 'uncategorized' ? 'ไม่จัดหมวดหมู่' : documentId;
+      const count = document.createElement('small'); count.textContent = `${files.length} ไฟล์`;
+      summary.append(label, count); details.append(summary);
+      if (documentId !== 'uncategorized') {
+        const bulk = document.createElement('button'); bulk.type = 'button'; bulk.className = 'bulk-delete'; bulk.textContent = 'ลบไฟล์ผลลัพธ์ทั้งหมด';
+        bulk.disabled = !deletionConfigured || !deletionAuthorized || files.some(file => file.active);
+        bulk.title = !deletionConfigured ? 'การลบถูกปิดที่เซิร์ฟเวอร์' : (!deletionAuthorized ? 'กรุณาปลดล็อกการลบ' : 'Source PDF จะไม่ถูกลบ');
+        bulk.addEventListener('click', () => bulkDelete(documentId)); details.append(bulk);
+      }
+      const phases = new Map();
+      files.forEach(file => { if (!phases.has(file.phase_label)) phases.set(file.phase_label, []); phases.get(file.phase_label).push(file); });
+      phases.forEach((phaseFiles, labelText) => {
+        const section = document.createElement('section'); section.className = 'phase-group';
+        const heading = document.createElement('h3'); heading.textContent = labelText; section.append(heading);
+        phaseFiles.forEach(file => section.append(buildFileRow(file))); details.append(section);
+      });
+      return details;
+    }
+    function buildFileRow(file) {
+      const row = document.createElement('div'); row.className = 'file-row';
+      const name = document.createElement('span'); name.className = 'file-name'; name.textContent = file.filename; name.title = file.filename;
+      const meta = document.createElement('span'); meta.className = 'file-meta'; meta.textContent = `${file.extension.toUpperCase()} · ${formatBytes(file.size)}`;
+      const actions = document.createElement('div'); actions.className = 'file-actions';
+      const download = document.createElement('a'); download.href = `/api/files/${file.file_id}/download`; download.textContent = 'ดาวน์โหลด'; download.setAttribute('aria-label', `ดาวน์โหลด ${file.filename}`); actions.append(download);
+      const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ'; remove.className = 'delete-link';
+      remove.disabled = file.is_source || file.active || !deletionConfigured || !deletionAuthorized;
+      remove.title = file.is_source ? 'Source PDF ได้รับการป้องกัน' : (file.active ? 'กำลังประมวลผล' : (!deletionAuthorized ? 'กรุณาปลดล็อกการลบ' : ''));
+      remove.addEventListener('click', () => deleteFile(file)); actions.append(remove);
+      row.append(name, meta, actions); return row;
+    }
+    async function unlockDeletion() {
+      const input = document.querySelector('#access-token');
+      const token = input.value.trim();
+      if (!token) return;
+      filesStatus.textContent = 'กำลังตรวจสิทธิ์…';
+      const response = await fetch('/api/files/access/check', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const result = await response.json();
+      if (!response.ok) { filesStatus.textContent = apiMessage(result, 'Token ไม่ถูกต้อง'); return; }
+      sessionStorage.setItem('iopFileManagerToken', token); input.value = ''; deletionAuthorized = true; filesStatus.textContent = 'ปลดล็อกการลบแล้ว'; loadFiles();
+    }
+    async function deleteFile(file) {
+      if (!confirm(`ยืนยันลบไฟล์ผลลัพธ์นี้?\n\n${file.filename}\n\nการลบไฟล์ Phase ก่อนหน้าอาจทำให้ต้องประมวลผล Phase ถัดไปใหม่`)) return;
+      filesStatus.textContent = `กำลังลบ ${file.filename}…`;
+      const response = await fetch(`/api/files/${file.file_id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ confirmed: true }) });
+      const result = await response.json();
+      filesStatus.textContent = response.ok ? `ลบ ${file.filename} แล้ว` : apiMessage(result, 'ลบไฟล์ไม่สำเร็จ');
+      if (response.status === 401) { deletionAuthorized = false; sessionStorage.removeItem('iopFileManagerToken'); }
+      if (response.ok) await loadFiles(); else renderFiles();
+    }
+    async function bulkDelete(documentId) {
+      filesStatus.textContent = `กำลังตรวจรายการ ${documentId}…`;
+      const previewResponse = await fetch(`/api/documents/${documentId}/outputs/delete/preview`, { method: 'POST', headers: authHeaders() });
+      const preview = await previewResponse.json();
+      if (!previewResponse.ok) { filesStatus.textContent = apiMessage(preview, 'ตรวจรายการไม่สำเร็จ'); return; }
+      const exactNames = preview.files.map(file => `• ${file.filename}`).join('\n');
+      const warning = preview.warnings.join('\n');
+      if (!confirm(`ยืนยันลบ Generated Outputs ของ ${documentId}\n${preview.file_count} ไฟล์ (${formatBytes(preview.total_bytes)})\n\n${exactNames}\n\n${warning}\n\nการดำเนินการนี้ย้อนกลับไม่ได้`)) return;
+      const response = await fetch(`/api/documents/${documentId}/outputs/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ confirmed: true, confirmation_token: preview.confirmation_token }) });
+      const result = await response.json();
+      if (!response.ok) filesStatus.textContent = apiMessage(result, 'ลบไฟล์ไม่สำเร็จ');
+      else filesStatus.textContent = result.partial ? `ลบได้ ${result.deleted.length} ไฟล์ และไม่สำเร็จ ${result.failed.length} ไฟล์` : `ลบ Generated Outputs ${result.deleted.length} ไฟล์แล้ว`;
+      await loadFiles();
+    }
+    document.querySelector('#files-refresh').addEventListener('click', loadFiles);
+    document.querySelector('#access-unlock').addEventListener('click', unlockDeletion);
+    document.querySelector('#access-token').addEventListener('keydown', event => { if (event.key === 'Enter') unlockDeletion(); });
+    fileSearch.addEventListener('input', renderFiles);
+    loadFiles();
   </script>
 </body>
 </html>

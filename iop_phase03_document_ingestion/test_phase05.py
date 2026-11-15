@@ -116,6 +116,7 @@ def test_dimension_prompt_uses_supplied_rubric_and_forbids_evidence_count_scorin
                     "evidence_chunk_ids": [],
                     "matched_points": [],
                     "strengths": [],
+                    "strength_evidence_mapping": [],
                     "missing_points": [],
                 }
             ]
@@ -147,8 +148,8 @@ def test_dimension_assessment_uses_one_call_and_preserves_criterion_order(monkey
         calls.append((settings, messages))
         return {
             "assessments": [
-                {"criterion_id": "1.1.2", "score": 4, "confidence": 0.8, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
-                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
+                {"criterion_id": "1.1.2", "score": 4, "confidence": 0.8, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "strength_evidence_mapping": [], "missing_points": []},
+                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "strength_evidence_mapping": [], "missing_points": []},
             ]
         }
 
@@ -189,7 +190,7 @@ def test_dimension_assessment_retries_incomplete_json(monkeypatch):
             return {"assessments": []}
         return {
             "assessments": [
-                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "missing_points": []},
+                {"criterion_id": "1.1.1", "score": 3, "confidence": 0.7, "evidence_sufficiency": "sufficient", "evidence_chunk_ids": [], "matched_points": [], "strengths": [], "strength_evidence_mapping": [], "missing_points": []},
             ]
         }
 
@@ -237,6 +238,7 @@ def test_evidence_sufficiency_is_optional_and_invalid_value_is_ignored(monkeypat
                     "evidence_chunk_ids": [],
                     "matched_points": [],
                     "strengths": [],
+                    "strength_evidence_mapping": [],
                     "missing_points": [],
                 }
             ]
@@ -300,6 +302,7 @@ def _assessment(criterion_id, citation_ids):
         "evidence_chunk_ids": citation_ids,
         "matched_points": [],
         "strengths": [],
+        "strength_evidence_mapping": [],
         "missing_points": [],
     }
 
