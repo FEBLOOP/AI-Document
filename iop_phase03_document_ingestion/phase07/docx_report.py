@@ -104,7 +104,7 @@ def _fill_table_header(row, labels: list[str]) -> None:
 
 
 def _set_evidence_table_widths(row) -> None:
-    for cell, width in zip(row.cells, [Cm(3.0), Cm(1.4), Cm(8.0), Cm(5.0)]):
+    for cell, width in zip(row.cells, [Cm(3.2), Cm(1.2), Cm(2.7), Cm(5.8), Cm(4.5)]):
         cell.width = width
 
 
@@ -150,12 +150,12 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
     citations = criterion.get("citations") or []
     if citations:
         document.add_heading("หลักฐานที่โมเดลเลือกอ้างอิง", level=3)
-        table = document.add_table(rows=1, cols=4)
+        table = document.add_table(rows=1, cols=5)
         table.style = "Table Grid"
         table.autofit = False
         _fill_table_header(
             table.rows[0],
-            ["Chunk", "หน้า", "ข้อความหลักฐาน", "จุดแข็งที่เกี่ยวข้อง"],
+            ["Source PDF", "หน้า", "Chunk", "ข้อความหลักฐาน", "จุดแข็งที่เกี่ยวข้อง"],
         )
         _set_evidence_table_widths(table.rows[0])
         for citation in citations:
@@ -167,7 +167,10 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
                 excerpt = str(excerpt)[:600].rstrip() + "…"
             row = table.add_row()
             _set_evidence_table_widths(row)
-            for cell, value in zip(row.cells[:3], [citation.get("chunk_id"), page, excerpt]):
+            for cell, value in zip(
+                row.cells[:4],
+                [citation.get("source_filename") or "—", page, citation.get("chunk_id"), excerpt],
+            ):
                 run = cell.paragraphs[0].add_run(_text(value))
                 _set_font(run, size=11)
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
@@ -175,8 +178,8 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
                 criterion,
                 citation.get("chunk_id"),
             )
-            _fill_related_strengths(row.cells[3], related_strengths)
-            row.cells[3].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+            _fill_related_strengths(row.cells[4], related_strengths)
+            row.cells[4].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
 
 
 def build_docx_report(

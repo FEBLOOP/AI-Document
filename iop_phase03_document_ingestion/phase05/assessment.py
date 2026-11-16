@@ -163,6 +163,8 @@ def review_packet(
                 "section": item.get("section"),
                 "page_start": item.get("page_start"),
                 "page_end": item.get("page_end"),
+                "source_id": item.get("source_id"),
+                "source_filename": item.get("source_filename"),
             }
         )
     return {

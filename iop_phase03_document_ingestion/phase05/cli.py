@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse
+import copy
 import json
 import math
 import time
@@ -49,7 +50,7 @@ def _build_output(
     by_dimension = defaultdict(list)
     for result in results:
         by_dimension[result["criterion"]["dimension_id"]].append(result)
-    return {
+    output = {
         "schema_version": SCHEMA_VERSION,
         "document_id": phase04["document_id"],
         "created_at": created_at,
@@ -64,6 +65,11 @@ def _build_output(
             for key, value in by_dimension.items()
         ],
     }
+    if phase04.get("assessment_id"):
+        output["assessment_id"] = phase04["assessment_id"]
+    if isinstance(phase04.get("sources"), list):
+        output["sources"] = copy.deepcopy(phase04["sources"])
+    return output
 
 
 def _write_output_atomic(path: Path, output: dict[str, Any]) -> None:

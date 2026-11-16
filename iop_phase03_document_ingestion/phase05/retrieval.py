@@ -133,8 +133,11 @@ def retrieve(
 
 def evidence_item(hit: dict[str, Any]) -> dict[str, Any]:
     chunk = hit["chunk"]
+    metadata = chunk.get("metadata") or {}
     return {"chunk_id": chunk["chunk_id"], "relevance_score": hit["score"],
             "lexical_score": hit.get("lexical_score"), "semantic_score": hit.get("semantic_score"),
             "text": chunk.get("normalized_text", ""),
             "section": chunk.get("section"), "page_start": chunk.get("page_start"), "page_end": chunk.get("page_end"),
+            "source_id": chunk.get("source_id") or metadata.get("source_id"),
+            "source_filename": chunk.get("source_filename") or metadata.get("source_filename") or metadata.get("source_file"),
             "source_blocks": chunk.get("source_blocks", [])}

@@ -38,16 +38,17 @@
     <header>
       <p class="eyebrow">IOP · DOCUMENT INTELLIGENCE</p>
       <h1>ประเมินเอกสารด้วย AI</h1>
-      <p class="lead">อัปโหลด PDF เพื่อสกัดหลักฐาน จัดกลุ่มตามเกณฑ์ IOP และเลือกโมเดลสำหรับประเมินผลได้ในขั้นตอนเดียว</p>
+      <p class="lead">อัปโหลด PDF หนึ่งไฟล์หรือหลายไฟล์เพื่อประเมินร่วมกันเป็น IOP Assessment เดียว พร้อมติดตามหลักฐานกลับไปยังไฟล์ต้นฉบับ</p>
     </header>
 
     <section class="panel">
       <form id="upload-form">
-        <label class="dropzone" for="pdf">
-          <input id="pdf" name="file" type="file" accept="application/pdf" required>
-          <span class="drop-title">เลือกไฟล์ PDF</span>
-          <span id="file-name">รองรับเอกสารบริษัทภาษาไทยและอังกฤษ</span>
+        <label id="dropzone" class="dropzone" for="pdf">
+          <input id="pdf" type="file" accept="application/pdf" multiple>
+          <span class="drop-title">เลือกหรือลาก PDF มาวาง</span>
+          <span id="file-name">เพิ่มได้หลายครั้ง · PDF ทั้งหมดจะถูกประเมินร่วมกัน</span>
         </label>
+        <div id="selected-files" class="selected-files hidden" aria-live="polite"></div>
         <label class="field" for="provider">
           <span>วิธีประเมิน LLM</span>
           <select id="provider" name="provider">
@@ -107,6 +108,8 @@
     const form = document.querySelector('#upload-form');
     const fileInput = document.querySelector('#pdf');
     const fileName = document.querySelector('#file-name');
+    const dropzone = document.querySelector('#dropzone');
+    const selectedFilesBox = document.querySelector('#selected-files');
     const button = document.querySelector('#submit');
     const provider = document.querySelector('#provider');
     const model = document.querySelector('#model');
@@ -124,8 +127,38 @@
     let fileInventory = [];
     let deletionConfigured = false;
     let deletionAuthorized = false;
+    let selectedFiles = [];
     let timer;
-    fileInput.addEventListener('change', () => fileName.textContent = fileInput.files[0]?.name || 'รองรับเอกสารบริษัทภาษาไทยและอังกฤษ');
+    function renderSelectedFiles() {
+      selectedFilesBox.replaceChildren();
+      selectedFilesBox.classList.toggle('hidden', !selectedFiles.length);
+      if (!selectedFiles.length) {
+        fileName.textContent = 'เพิ่มได้หลายครั้ง · PDF ทั้งหมดจะถูกประเมินร่วมกัน';
+        return;
+      }
+      const summary = document.createElement('div');
+      summary.className = 'selected-summary';
+      summary.textContent = `${selectedFiles.length} ไฟล์ · รวม ${formatBytes(selectedFiles.reduce((sum, file) => sum + file.size, 0))}`;
+      selectedFilesBox.append(summary);
+      selectedFiles.forEach((file, index) => {
+        const row = document.createElement('div'); row.className = 'selected-file';
+        const details = document.createElement('span'); details.textContent = `${file.name} · ${formatBytes(file.size)}`;
+        const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'นำออก';
+        remove.addEventListener('click', () => { selectedFiles.splice(index, 1); renderSelectedFiles(); });
+        row.append(details, remove); selectedFilesBox.append(row);
+      });
+      fileName.textContent = selectedFiles.length === 1 ? 'จะใช้ขั้นตอน Single-PDF เดิม' : 'ไฟล์ทั้งหมดจะได้ Assessment ID เดียว';
+    }
+    function addFiles(files) {
+      const incoming = [...files];
+      const invalid = incoming.find(file => file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'));
+      if (invalid) { alert(`รองรับเฉพาะ PDF: ${invalid.name}`); return; }
+      selectedFiles.push(...incoming); fileInput.value = ''; renderSelectedFiles();
+    }
+    fileInput.addEventListener('change', () => addFiles(fileInput.files));
+    ['dragenter', 'dragover'].forEach(name => dropzone.addEventListener(name, event => { event.preventDefault(); dropzone.classList.add('dragging'); }));
+    ['dragleave', 'drop'].forEach(name => dropzone.addEventListener(name, event => { event.preventDefault(); dropzone.classList.remove('dragging'); }));
+    dropzone.addEventListener('drop', event => addFiles(event.dataTransfer.files));
     provider.addEventListener('change', () => {
       const choices = {
         huggingface: ['Qwen/Qwen3-8B', 'โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง'],
@@ -145,15 +178,19 @@
     document.querySelector('#clear-dimensions').addEventListener('click', () => dimensionInputs.forEach(input => input.checked = false));
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (!selectedFiles.length) { alert('กรุณาเลือกไฟล์ PDF อย่างน้อยหนึ่งไฟล์'); return; }
       if (provider.value !== 'none' && !dimensionInputs.some(input => input.checked)) {
         alert('กรุณาเลือกอย่างน้อยหนึ่งมิติ');
         return;
       }
       button.disabled = true;
       button.textContent = 'กำลังอัปโหลด…';
-      const response = await fetch('/api/jobs', { method: 'POST', body: new FormData(form) });
+      const data = new FormData(form);
+      const multi = selectedFiles.length > 1;
+      selectedFiles.forEach(file => data.append(multi ? 'files' : 'file', file, file.name));
+      const response = await fetch(multi ? '/api/assessments' : '/api/jobs', { method: 'POST', body: data });
       const result = await response.json();
-      if (!response.ok) { alert(result.detail || 'อัปโหลดไม่สำเร็จ'); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร'; return; }
+      if (!response.ok) { alert(apiMessage(result, 'อัปโหลดไม่สำเร็จ')); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร'; return; }
       jobPanel.classList.remove('hidden');
       timer = setInterval(() => poll(result.id), 1500);
       poll(result.id);
@@ -167,9 +204,11 @@
       if (job.status === 'completed') {
         clearInterval(timer); button.disabled = false; button.textContent = 'เริ่มวิเคราะห์เอกสาร';
         const meta = document.querySelector('#metadata');
-        meta.innerHTML = `<div><dt>Document ID</dt><dd>${job.document_id}</dd></div><div><dt>จำนวนหน้า</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>`;
+        const identityLabel = job.assessment_id ? 'Assessment ID' : 'Document ID';
+        const sourceMeta = job.source_count ? `<div><dt>Source PDFs</dt><dd>${job.source_count}</dd></div>` : '';
+        meta.innerHTML = `<div><dt>${identityLabel}</dt><dd>${job.document_id}</dd></div>${sourceMeta}<div><dt>จำนวนหน้ารวม</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>`;
         meta.classList.remove('hidden');
-        const names = ['phase03', 'phase04'];
+        const names = job.assessment_id ? ['manifest', 'phase03', 'phase04'] : ['phase03', 'phase04'];
         if (job.provider !== 'none') {
           names.push('phase05', 'phase06', 'phase07_scoring');
           if (job.report_format === 'pdf' || job.report_format === 'both') names.push('report_pdf');
@@ -177,6 +216,7 @@
         }
         const downloads = document.querySelector('#downloads');
         const labels = {
+          manifest: 'ดาวน์โหลด Assessment Manifest',
           phase03: 'ดาวน์โหลด PHASE03 JSON', phase04: 'ดาวน์โหลด PHASE04 JSON',
           phase05: 'ดาวน์โหลด PHASE05 JSON', phase06: 'ดาวน์โหลด PHASE06 JSON',
           phase07_scoring: 'ดาวน์โหลดคะแนน PHASE07 JSON',

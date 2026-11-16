@@ -283,8 +283,9 @@ def _criterion_story(
     if citations:
         story.append(_paragraph("หลักฐานที่โมเดลเลือกอ้างอิง", styles["h3"]))
         citation_rows = [[
-            _paragraph("Chunk", styles["small"]),
+            _paragraph("Source PDF", styles["small"]),
             _paragraph("หน้า", styles["small"]),
+            _paragraph("Chunk", styles["small"]),
             _paragraph("ข้อความหลักฐาน", styles["small"]),
             _paragraph("จุดแข็งที่เกี่ยวข้อง", styles["small"]),
         ]]
@@ -306,15 +307,16 @@ def _criterion_story(
             )
             citation_rows.append(
                 [
-                    _paragraph(citation.get("chunk_id"), styles["small"]),
+                    _paragraph(citation.get("source_filename") or "—", styles["small"]),
                     _paragraph(page, styles["small"]),
+                    _paragraph(citation.get("chunk_id"), styles["small"]),
                     _paragraph(excerpt, styles["small"]),
                     _paragraph(related_text, styles["small"]),
                 ]
             )
         citation_table = Table(
             citation_rows,
-            colWidths=[27 * mm, 15 * mm, 75 * mm, 43 * mm],
+            colWidths=[30 * mm, 13 * mm, 27 * mm, 55 * mm, 35 * mm],
             repeatRows=1,
         )
         citation_table.setStyle(

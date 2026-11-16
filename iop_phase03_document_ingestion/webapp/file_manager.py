@@ -15,8 +15,8 @@ from time import time
 from typing import Any, Callable
 
 
-DOCUMENT_ID_RE = re.compile(r"^DOC_[A-F0-9]{12}$")
-FILENAME_DOCUMENT_RE = re.compile(r"^(DOC_[A-F0-9]{12})(?=$|[_.-])")
+DOCUMENT_ID_RE = re.compile(r"^(?:DOC|ASSESSMENT)_[A-F0-9]{12}$")
+FILENAME_DOCUMENT_RE = re.compile(r"^((?:DOC|ASSESSMENT)_[A-F0-9]{12})(?=$|[_.-])")
 OUTPUT_EXTENSIONS = {".json", ".jsonl", ".pdf", ".docx"}
 SOURCE_EXTENSIONS = {".pdf"}
 PHASE_LABELS = {
@@ -278,6 +278,17 @@ class FileManager:
                         source_name = self.source_name_for_path(source_root.path / stored_source_name) or stored_source_name
                 if root.kind == "output" and document_id and source_name and Path(source_name).name == source_name:
                     source_map.setdefault(stored_source_name or source_name, document_id)
+                if root.kind == "output" and document_id:
+                    for source in metadata.get("sources", []):
+                        if not isinstance(source, dict):
+                            continue
+                        relative_source = source.get("stored_relative_path")
+                        if (
+                            isinstance(relative_source, str)
+                            and not Path(relative_source).is_absolute()
+                            and ".." not in Path(relative_source).parts
+                        ):
+                            source_map.setdefault(Path(relative_source).as_posix(), document_id)
                 preliminary.append({
                     "root": root, "path": safe_path, "stat": stat, "metadata": metadata,
                     "document_id": document_id, "source_name": source_name, "association": association,
@@ -290,7 +301,8 @@ class FileManager:
             document_id = row["document_id"]
             association = row["association"]
             if root.kind == "source":
-                mapped = source_map.get(path.name)
+                relative = path.relative_to(root.path).as_posix()
+                mapped = source_map.get(relative) or source_map.get(path.name)
                 document_id = mapped
                 association = "metadata-source" if mapped else "unclassified"
                 row["source_name"] = self.source_name_for_path(path) or path.name
@@ -306,7 +318,7 @@ class FileManager:
             ))
         return sorted(results, key=lambda item: (item.document_id or "~", item.phase, item.filename.lower()))
 
-    def _read_identity_metadata(self, path: Path) -> dict[str, str]:
+    def _read_identity_metadata(self, path: Path) -> dict[str, Any]:
         # Identity fields are emitted near the beginning of every pipeline JSON.
         # Read a bounded prefix for large evidence/embedding payloads rather than
         # loading tens of MB on each sidebar refresh.
@@ -316,7 +328,7 @@ class FileManager:
                     prefix = handle.read(131_072)
             except (OSError, UnicodeError):
                 return {}
-            document_match = re.search(r'"document_id"\s*:\s*"(DOC_[A-F0-9]{12})"', prefix)
+            document_match = re.search(r'"document_id"\s*:\s*"((?:DOC|ASSESSMENT)_[A-F0-9]{12})"', prefix)
             source_match = re.search(r'"source_file"\s*:\s*"([^"\\/]+)"', prefix)
             return {
                 key: value for key, value in {
@@ -330,7 +342,7 @@ class FileManager:
             return {}
         if not isinstance(payload, dict):
             return {}
-        document_id = payload.get("document_id")
+        document_id = payload.get("assessment_id") or payload.get("document_id")
         if not isinstance(document_id, str) or not DOCUMENT_ID_RE.fullmatch(document_id):
             document_id = None
         source = payload.get("source_file")
@@ -339,7 +351,18 @@ class FileManager:
             source = metadata.get("source_file") if isinstance(metadata, dict) else None
         if not isinstance(source, str) or Path(source).name != source:
             source = None
-        return {key: value for key, value in {"document_id": document_id, "source_file": source}.items() if value}
+        sources = payload.get("sources")
+        if not isinstance(sources, list):
+            sources = []
+        return {
+            key: value
+            for key, value in {
+                "document_id": document_id,
+                "source_file": source,
+                "sources": sources,
+            }.items()
+            if value
+        }
 
     def _filename_document_id(self, name: str) -> str | None:
         match = FILENAME_DOCUMENT_RE.match(name)
@@ -428,7 +451,7 @@ class FileManager:
 
     def _validate_document_id(self, value: str) -> str:
         if not DOCUMENT_ID_RE.fullmatch(value or ""):
-            raise FileManagerError("Document ID ไม่ถูกต้อง", code="invalid_document_id")
+            raise FileManagerError("Document/Assessment ID ไม่ถูกต้อง", code="invalid_document_id")
         return value
 
     def _purge_previews(self) -> None:

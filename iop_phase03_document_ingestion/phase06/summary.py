@@ -176,11 +176,13 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
         "created_at": datetime.now(timezone.utc).isoformat(),
         "summary_provider": settings.provider if settings else "none",
         "summary_model": settings.model if settings else None,
-        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "rubric": copy.deepcopy(phase05.get("rubric")), "criterion_snapshots": source_snapshots,
+        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "sources": copy.deepcopy(phase05.get("sources", [])), "rubric": copy.deepcopy(phase05.get("rubric")), "criterion_snapshots": source_snapshots,
                               "criterion_snapshot_digests": {key: snapshot_digest(value) for key, value in source_snapshots.items()}},
         "good_examples_reference": {"knowledge_base": styles["knowledge_base"], "rules": styles["rules"], "overall_example": styles["overall_example"]},
         "overall_summary": str((generated or {}).get("overall_summary") or _template_overall(dimensions, styles["overall_example"])),
         "dimension_summaries": dimensions,
     }
+    if isinstance(phase05.get("sources"), list):
+        output["sources"] = copy.deepcopy(phase05["sources"])
     validate_summary_integrity(output)
     return output

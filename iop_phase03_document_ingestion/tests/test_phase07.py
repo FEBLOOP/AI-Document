@@ -35,8 +35,8 @@ def _phase06_with_strength_mapping():
                         ],
                         "areas_for_improvement": [],
                         "citations": [
-                            {"chunk_id": "C1", "page_start": 2, "page_end": 2, "text": "หลักฐานที่เชื่อมโยง"},
-                            {"chunk_id": "C2", "page_start": 3, "page_end": 4, "text": "หลักฐานที่ไม่มี mapping"},
+                            {"chunk_id": "C1", "source_filename": "policy.pdf", "page_start": 2, "page_end": 2, "text": "หลักฐานที่เชื่อมโยง"},
+                            {"chunk_id": "C2", "source_filename": "annual.pdf", "page_start": 3, "page_end": 4, "text": "หลักฐานที่ไม่มี mapping"},
                         ],
                     }
                 ],
@@ -141,6 +141,7 @@ def test_pdf_and_docx_append_related_strengths_column_and_keep_strengths_section
     assert "จุดแข็งที่เกี่ยวข้อง" in pdf_text
     assert "มีนโยบาย" in pdf_text
     assert "—" in pdf_text
+    assert "policy.pdf" in pdf_text
 
     document = Document(docx_output)
     paragraph_text = "\n".join(paragraph.text for paragraph in document.paragraphs)
@@ -151,13 +152,14 @@ def test_pdf_and_docx_append_related_strengths_column_and_keep_strengths_section
         for table in document.tables
         if table.rows[0].cells[-1].text == "จุดแข็งที่เกี่ยวข้อง"
     )
-    assert len(evidence_table.columns) == 4
+    assert len(evidence_table.columns) == 5
     assert evidence_table.autofit is False
     widths_cm = [cell.width.cm for cell in evidence_table.rows[0].cells]
-    assert widths_cm == pytest.approx([3.0, 1.4, 8.0, 5.0], abs=0.05)
-    assert "มีนโยบาย" in evidence_table.rows[1].cells[3].text
-    assert "มีระบบติดตามผลนวัตกรรม" in evidence_table.rows[1].cells[3].text
-    assert evidence_table.rows[2].cells[3].text == "—"
+    assert widths_cm == pytest.approx([3.2, 1.2, 2.7, 5.8, 4.5], abs=0.05)
+    assert evidence_table.rows[1].cells[0].text == "policy.pdf"
+    assert "มีนโยบาย" in evidence_table.rows[1].cells[4].text
+    assert "มีระบบติดตามผลนวัตกรรม" in evidence_table.rows[1].cells[4].text
+    assert evidence_table.rows[2].cells[4].text == "—"
 
 
 def test_historical_phase06_without_mapping_renders_dash_in_new_column(tmp_path):
@@ -174,7 +176,7 @@ def test_historical_phase06_without_mapping_renders_dash_in_new_column(tmp_path)
         for table in document.tables
         if table.rows[0].cells[-1].text == "จุดแข็งที่เกี่ยวข้อง"
     )
-    assert [row.cells[3].text for row in evidence_table.rows[1:]] == ["—", "—"]
+    assert [row.cells[4].text for row in evidence_table.rows[1:]] == ["—", "—"]
 
 
 def test_pdf_and_docx_display_the_same_overall_score_and_maturity(tmp_path):

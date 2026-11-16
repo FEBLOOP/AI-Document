@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import uuid
+import pymupdf
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
@@ -25,11 +26,23 @@ from phase06.validation import validate_summary_integrity
 from phase07.report import build_report
 from phase07.scoring import calculate_scoring
 from webapp.file_manager import FileManager, FileManagerError
+from webapp.multi_assessment import (
+    ASSESSMENT_ID_RE,
+    build_combined_phase03,
+    combine_phase04_sources,
+    new_assessment_id,
+    now_utc,
+    sanitize_pdf_filename,
+    source_id,
+    submission_fingerprint,
+    write_json_atomic,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_DIR = PROJECT_ROOT / "data" / "input" / "uploads"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "output"
+WORK_DIR = PROJECT_ROOT / "data" / "work"
 SOURCE_INDEX_PATH = INPUT_DIR / ".file-manager-metadata.json"
 RUBRIC_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "iop_reference.json"
 GOOD_EXAMPLES_PATH = PROJECT_ROOT.parent / "data" / "knowledge_base" / "good_examples_kb.json"
@@ -42,11 +55,15 @@ DEFAULT_MODELS = {
 }
 IOP_DIMENSIONS = tuple(f"D{index}" for index in range(1, 9))
 # Keep the Qwen request context small enough for the local 8 GB RTX 4060.
-WEB_LLM_TOP_K = 2
+WEB_LLM_TOP_K = 5
 WEB_SEMANTIC_WEIGHT = 0.7
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = Lock()
 SOURCE_INDEX_LOCK = Lock()
+MULTI_MAX_FILES = int(os.getenv("IOP_MULTI_MAX_FILES", "10"))
+MULTI_MAX_FILE_BYTES = int(os.getenv("IOP_MULTI_MAX_FILE_BYTES", str(50 * 1024 * 1024)))
+MULTI_MAX_TOTAL_BYTES = int(os.getenv("IOP_MULTI_MAX_TOTAL_BYTES", str(200 * 1024 * 1024)))
+MULTI_MIN_FREE_BYTES = int(os.getenv("IOP_MULTI_MIN_FREE_BYTES", str(100 * 1024 * 1024)))
 
 
 def _configured_output_roots() -> list[Path]:
@@ -99,13 +116,18 @@ def _source_index() -> dict[str, str]:
     return {
         stored: original
         for stored, original in value.items()
-        if isinstance(stored, str) and Path(stored).name == stored
+        if isinstance(stored, str) and not Path(stored).is_absolute()
+        and ".." not in Path(stored).parts and "\\" not in stored
         and isinstance(original, str) and Path(original).name == original
     } if isinstance(value, dict) else {}
 
 
 def _source_original_name(path: Path) -> str | None:
-    return _source_index().get(path.name)
+    try:
+        key = path.resolve().relative_to(INPUT_DIR.resolve()).as_posix()
+    except ValueError:
+        key = path.name
+    return _source_index().get(key) or _source_index().get(path.name)
 
 
 def _record_source_name(stored_name: str, original_name: str) -> None:
@@ -119,6 +141,24 @@ def _record_source_name(stored_name: str, original_name: str) -> None:
         current[stored_name] = original_name
         temporary = SOURCE_INDEX_PATH.with_suffix(".tmp")
         temporary.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary.replace(SOURCE_INDEX_PATH)
+
+
+def _remove_source_names(stored_prefix: str) -> None:
+    with SOURCE_INDEX_LOCK:
+        try:
+            current = json.loads(SOURCE_INDEX_PATH.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+            return
+        if not isinstance(current, dict):
+            return
+        cleaned = {
+            key: value
+            for key, value in current.items()
+            if not (isinstance(key, str) and key.startswith(stored_prefix + "/"))
+        }
+        temporary = SOURCE_INDEX_PATH.with_suffix(".tmp")
+        temporary.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2), encoding="utf-8")
         temporary.replace(SOURCE_INDEX_PATH)
 
 
@@ -156,6 +196,278 @@ def _job_payload(job_id: str) -> dict[str, Any]:
         if not job:
             raise HTTPException(status_code=404, detail="ไม่พบงานที่ระบุ")
         return {key: value for key, value in job.items() if key != "paths"}
+
+
+def _normalize_job_config(
+    provider: str,
+    model: str | None,
+    dimensions: list[str] | None,
+    report_format: str,
+) -> tuple[str, str | None, list[str], str]:
+    provider = provider.strip().lower()
+    if provider not in LLM_PROVIDERS:
+        raise HTTPException(status_code=400, detail="ไม่รองรับ LLM provider นี้")
+    report_format = report_format.strip().lower()
+    if report_format not in REPORT_FORMATS:
+        raise HTTPException(status_code=400, detail="ไม่รองรับรูปแบบรายงานนี้")
+    model = model.strip() if model else None
+    if provider == "ollama" and not model:
+        raise HTTPException(status_code=400, detail="กรุณาระบุ Ollama model tag จาก /api/tags")
+    if provider != "none" and not model:
+        model = DEFAULT_MODELS[provider]
+    selected: list[str] = []
+    for dimension_id in dimensions or []:
+        normalized = dimension_id.strip().upper()
+        if normalized in IOP_DIMENSIONS and normalized not in selected:
+            selected.append(normalized)
+    selected.sort(key=IOP_DIMENSIONS.index)
+    if provider != "none" and not selected:
+        raise HTTPException(status_code=400, detail="กรุณาเลือกอย่างน้อยหนึ่งมิติ")
+    return provider, model, selected or list(IOP_DIMENSIONS), report_format
+
+
+def _manifest_path(assessment_id: str) -> Path:
+    return OUTPUT_DIR / f"{assessment_id}_manifest.json"
+
+
+def _update_manifest(assessment_id: str, **changes: Any) -> None:
+    path = _manifest_path(assessment_id)
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+        manifest = {
+            "schema_version": "ai-document.assessment-manifest/v1",
+            "assessment_id": assessment_id,
+            "document_id": assessment_id,
+            "created_at": now_utc(),
+        }
+    manifest.update(changes, updated_at=now_utc())
+    write_json_atomic(path, manifest)
+
+
+def _process_is_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def _recover_interrupted_multi_jobs() -> None:
+    """Clean only orphaned assessment workspaces and fail their manifests."""
+    if not WORK_DIR.is_dir():
+        return
+    for work_path in WORK_DIR.iterdir():
+        if work_path.is_symlink() or not work_path.is_dir() or not ASSESSMENT_ID_RE.fullmatch(work_path.name):
+            continue
+        try:
+            owner = json.loads((work_path / "owner.json").read_text(encoding="utf-8"))
+            owner_pid = int(owner.get("pid", 0))
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError, TypeError, ValueError):
+            owner_pid = 0
+        if _process_is_alive(owner_pid):
+            continue
+        shutil.rmtree(work_path, ignore_errors=True)
+        manifest_path = _manifest_path(work_path.name)
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if manifest.get("status") in {"queued", "running"}:
+            _update_manifest(
+                work_path.name,
+                status="failed",
+                stage="interrupted",
+                error="งานถูกขัดจังหวะจากการหยุดหรือรีสตาร์ตเว็บเซิร์ฟเวอร์",
+            )
+
+
+def recover_interrupted_multi_jobs() -> None:
+    _recover_interrupted_multi_jobs()
+
+
+app.router.add_event_handler("startup", recover_interrupted_multi_jobs)
+
+
+def _run_multi_pipeline(
+    job_id: str,
+    assessment_id: str,
+    sources: list[dict[str, Any]],
+    provider: str,
+    model: str | None,
+    dimensions: list[str],
+    report_format: str,
+) -> None:
+    work_root = WORK_DIR / assessment_id
+    paths: dict[str, str] = {
+        "manifest": str(_manifest_path(assessment_id)),
+        **{item["source_id"].lower(): str(item["path"]) for item in sources},
+    }
+    try:
+        work_root.mkdir(parents=True, exist_ok=False)
+        write_json_atomic(work_root / "owner.json", {"pid": os.getpid(), "job_id": job_id})
+        _update_manifest(assessment_id, status="running", stage="phase03")
+        phase03_results: list[tuple[dict[str, Any], dict[str, Any]]] = []
+        for index, descriptor in enumerate(sources, start=1):
+            filename = descriptor["filename"]
+            progress = 5 + round(25 * (index - 1) / len(sources))
+            _update_job(
+                job_id,
+                status="running",
+                stage="phase03",
+                message=f"กำลังอ่านข้อความและ OCR ไฟล์ {index}/{len(sources)}: {filename}",
+                progress=progress,
+            )
+            source_work = work_root / descriptor["source_id"]
+            try:
+                _, extracted = ingest_pdf(str(descriptor["path"]), str(source_work))
+            except Exception as exc:
+                raise RuntimeError(f"Phase 03 ไม่สำเร็จสำหรับไฟล์ {filename}: {exc}") from exc
+            extracted["source_file"] = filename
+            descriptor["source_document_id"] = extracted.get("document_id")
+            descriptor["page_count"] = extracted.get("page_count")
+            descriptor["ocr_used"] = extracted.get("ocr_used")
+            phase03_results.append((descriptor, extracted))
+
+        combined03 = build_combined_phase03(assessment_id, phase03_results)
+        phase03_path = OUTPUT_DIR / f"{assessment_id}_phase03.json"
+        write_json_atomic(phase03_path, combined03)
+        paths["phase03"] = str(phase03_path)
+        _update_manifest(
+            assessment_id,
+            stage="phase04",
+            sources=[{key: value for key, value in item.items() if key != "path"} for item in sources],
+            outputs={"phase03": phase03_path.name},
+        )
+
+        settings = Settings.load()
+        create_embeddings = settings.embedding_provider != "none"
+        phase04_results: list[tuple[dict[str, Any], dict[str, Any]]] = []
+        for index, (descriptor, extracted) in enumerate(phase03_results, start=1):
+            progress = 32 + round(18 * (index - 1) / len(sources))
+            _update_job(
+                job_id,
+                stage="phase04",
+                message=f"กำลังสร้าง chunks{(' และ embeddings' if create_embeddings else '')} ไฟล์ {index}/{len(sources)}: {descriptor['filename']}",
+                progress=progress,
+            )
+            phase04_results.append(
+                (descriptor, build_phase04(extracted, settings, embed=create_embeddings))
+            )
+        combined04 = combine_phase04_sources(assessment_id, phase04_results)
+        phase04_path = OUTPUT_DIR / f"{assessment_id}_phase04.json"
+        write_json_atomic(phase04_path, combined04)
+        paths["phase04"] = str(phase04_path)
+
+        phase05_path: Path | None = None
+        manifest_outputs = {"phase03": phase03_path.name, "phase04": phase04_path.name}
+        if provider != "none":
+            provider_name = {
+                "huggingface": "Qwen3-8B ในเครื่อง",
+                "ollama": "Ollama",
+                "openai": "OpenAI API",
+                "anthropic": "Claude API",
+            }[provider]
+            _update_manifest(assessment_id, stage="phase05", outputs=manifest_outputs)
+            _update_job(job_id, stage="phase05", message=f"{provider_name} กำลังประเมินหลักฐานจาก PDF ทั้งหมดร่วมกัน", progress=55)
+            suffix = "" if dimensions == list(IOP_DIMENSIONS) else "_" + "-".join(dimensions)
+            phase05_path = OUTPUT_DIR / f"{assessment_id}_phase05{suffix}_assessment.json"
+            command = [
+                sys.executable, "-m", "phase05.cli",
+                "--phase04", str(phase04_path), "--rubric", str(RUBRIC_PATH),
+                "--output", str(phase05_path), "--provider", provider,
+                "--top-k", str(WEB_LLM_TOP_K), "--retrieval", "hybrid",
+                "--semantic-weight", str(WEB_SEMANTIC_WEIGHT),
+                "--dimensions", ",".join(dimensions),
+            ]
+            if model:
+                command.extend(["--model", model])
+            process = subprocess.Popen(
+                command,
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": os.getenv("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")},
+            )
+            log: list[str] = []
+            assert process.stdout is not None
+            for raw_line in process.stdout:
+                line = raw_line.strip()
+                if not line:
+                    continue
+                log.append(line)
+                match = re.match(r"^\[(\d+)/(\d+)\]\s+(.+)$", line)
+                if match:
+                    current, total, detail = int(match.group(1)), int(match.group(2)), match.group(3)
+                    completed = current if detail.lower().startswith(("completed ", "skipped ")) else current - 1
+                    _update_job(job_id, message=f"{provider_name}: {detail}", progress=55 + round(35 * completed / total))
+            return_code = process.wait()
+            if return_code != 0:
+                raise RuntimeError("\n".join(log[-50:]) or f"Phase 05 exited with status {return_code}.")
+            paths["phase05"] = str(phase05_path)
+            manifest_outputs["phase05"] = phase05_path.name
+
+            _update_job(job_id, stage="phase06", message="กำลังสร้างสรุปรวมจากผล Phase 05", progress=94)
+            _update_manifest(assessment_id, stage="phase06", outputs=manifest_outputs)
+            phase05 = json.loads(phase05_path.read_text(encoding="utf-8"))
+            good_examples = json.loads(GOOD_EXAMPLES_PATH.read_text(encoding="utf-8"))
+            phase06 = build_summary(phase05, good_examples, "none", None)
+            validate_summary_integrity(phase06)
+            phase06_path = OUTPUT_DIR / f"{assessment_id}_phase06_summary.json"
+            write_json_atomic(phase06_path, phase06)
+            paths["phase06"] = str(phase06_path)
+            manifest_outputs["phase06"] = phase06_path.name
+
+            _update_job(job_id, stage="phase07", message="กำลังสร้างรายงานรวม", progress=98)
+            _update_manifest(assessment_id, stage="phase07", outputs=manifest_outputs)
+            rubric = json.loads(RUBRIC_PATH.read_text(encoding="utf-8"))
+            scoring = calculate_scoring(phase06, rubric)
+            scoring_path = OUTPUT_DIR / f"{assessment_id}_phase07_scoring.json"
+            write_json_atomic(scoring_path, {
+                "schema_version": "ai-document.phase07-scoring/v1",
+                "assessment_id": assessment_id,
+                "document_id": assessment_id,
+                "sources": combined04["sources"],
+                "scoring": scoring,
+            })
+            paths["phase07_scoring"] = str(scoring_path)
+            manifest_outputs["phase07_scoring"] = scoring_path.name
+            extensions = ("pdf", "docx") if report_format == "both" else (report_format,)
+            for extension in extensions:
+                report_path = OUTPUT_DIR / f"{assessment_id}_iop_report.{extension}"
+                build_report(phase06, report_path, rubric)
+                paths[f"report_{extension}"] = str(report_path)
+                manifest_outputs[f"report_{extension}"] = report_path.name
+
+        _update_manifest(assessment_id, status="completed", stage="completed", outputs=manifest_outputs)
+        _update_job(
+            job_id,
+            status="completed",
+            stage="completed",
+            message="ประมวลผล PDF ทั้งหมดเป็นการประเมินเดียวเสร็จแล้ว",
+            progress=100,
+            document_id=assessment_id,
+            assessment_id=assessment_id,
+            source_count=len(sources),
+            page_count=sum(int(item.get("page_count") or 0) for item in sources),
+            ocr_used=any(bool(item.get("ocr_used")) for item in sources),
+            paths=paths,
+        )
+    except Exception as exc:
+        _update_manifest(assessment_id, status="failed", stage="failed", error=str(exc))
+        _update_job(job_id, status="failed", stage="failed", message=str(exc), progress=100, paths=paths)
+    finally:
+        if work_root.is_dir():
+            shutil.rmtree(work_root, ignore_errors=True)
 
 
 def _run_pipeline(
@@ -406,6 +718,158 @@ async def create_job(
     return {"id": job_id}
 
 
+@app.post("/api/assessments", status_code=202)
+async def create_multi_assessment(
+    background_tasks: BackgroundTasks,
+    files: list[UploadFile] = File(...),
+    provider: str = Form("huggingface"),
+    model: str | None = Form(None),
+    dimensions: list[str] | None = Form(None),
+    report_format: str = Form("pdf"),
+) -> dict[str, str]:
+    provider, model, selected_dimensions, report_format = _normalize_job_config(
+        provider, model, dimensions, report_format
+    )
+    if len(files) < 2:
+        raise HTTPException(status_code=400, detail="Multi-PDF assessment ต้องมีอย่างน้อย 2 ไฟล์")
+    if len(files) > MULTI_MAX_FILES:
+        raise HTTPException(status_code=413, detail=f"อัปโหลดได้สูงสุด {MULTI_MAX_FILES} ไฟล์ต่อการประเมิน")
+    INPUT_DIR.mkdir(parents=True, exist_ok=True)
+    if shutil.disk_usage(INPUT_DIR).free < MULTI_MIN_FREE_BYTES:
+        raise HTTPException(status_code=507, detail="พื้นที่จัดเก็บไม่เพียงพอสำหรับเริ่มการประเมิน")
+
+    assessment_id = new_assessment_id(uuid.uuid4().hex)
+    source_root = INPUT_DIR / assessment_id
+    source_root.mkdir(parents=True, exist_ok=False)
+    descriptors: list[dict[str, Any]] = []
+    total_size = 0
+    try:
+        for index, upload in enumerate(files, start=1):
+            try:
+                filename = sanitize_pdf_filename(upload.filename)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            if upload.content_type and upload.content_type.lower() not in {
+                "application/pdf", "application/octet-stream"
+            }:
+                raise HTTPException(status_code=400, detail=f"ไฟล์ {filename} ไม่ใช่ชนิด PDF")
+            sid = source_id(index)
+            stored_path = source_root / f"{sid}.pdf"
+            digest = hashlib.sha256()
+            size = 0
+            with stored_path.open("xb") as target:
+                while chunk := await upload.read(1024 * 1024):
+                    size += len(chunk)
+                    total_size += len(chunk)
+                    if size > MULTI_MAX_FILE_BYTES:
+                        raise HTTPException(status_code=413, detail=f"ไฟล์ {filename} มีขนาดเกินกำหนด")
+                    if total_size > MULTI_MAX_TOTAL_BYTES:
+                        raise HTTPException(status_code=413, detail="ขนาดไฟล์รวมเกินกำหนด")
+                    digest.update(chunk)
+                    target.write(chunk)
+            await upload.close()
+            if size == 0:
+                raise HTTPException(status_code=400, detail=f"ไฟล์ {filename} ว่างเปล่า")
+            try:
+                with pymupdf.open(stream=stored_path.read_bytes(), filetype="pdf") as document:
+                    if document.page_count < 1:
+                        raise ValueError("PDF ไม่มีหน้าเอกสาร")
+            except Exception as exc:
+                raise HTTPException(status_code=400, detail=f"ไฟล์ {filename} เสียหายหรือไม่ใช่ PDF ที่อ่านได้") from exc
+            relative = stored_path.relative_to(INPUT_DIR).as_posix()
+            _record_source_name(relative, filename)
+            descriptors.append({
+                "source_id": sid,
+                "filename": filename,
+                "stored_relative_path": relative,
+                "path": stored_path,
+                "size_bytes": size,
+                "sha256": digest.hexdigest(),
+            })
+    except Exception:
+        for upload in files:
+            await upload.close()
+        shutil.rmtree(source_root, ignore_errors=True)
+        _remove_source_names(assessment_id)
+        raise
+
+    config = {
+        "provider": provider,
+        "model": model,
+        "dimensions": selected_dimensions,
+        "report_format": report_format,
+        "top_k": WEB_LLM_TOP_K,
+        "retrieval": "hybrid",
+        "semantic_weight": WEB_SEMANTIC_WEIGHT,
+    }
+    fingerprint = submission_fingerprint(descriptors, config)
+    with JOBS_LOCK:
+        duplicate = next(
+            (
+                job for job in JOBS.values()
+                if job.get("submission_fingerprint") == fingerprint
+                and job.get("status") in {"queued", "running"}
+            ),
+            None,
+        )
+    if duplicate:
+        shutil.rmtree(source_root, ignore_errors=True)
+        _remove_source_names(assessment_id)
+        raise HTTPException(status_code=409, detail="ชุดไฟล์และการตั้งค่านี้กำลังประมวลผลอยู่แล้ว")
+
+    public_sources = [{key: value for key, value in item.items() if key != "path"} for item in descriptors]
+    manifest = {
+        "schema_version": "ai-document.assessment-manifest/v1",
+        "assessment_id": assessment_id,
+        "document_id": assessment_id,
+        "created_at": now_utc(),
+        "updated_at": now_utc(),
+        "status": "queued",
+        "stage": "queued",
+        "submission_fingerprint": fingerprint,
+        "configuration": config,
+        "sources": public_sources,
+        "outputs": {},
+    }
+    write_json_atomic(_manifest_path(assessment_id), manifest)
+    job_id = uuid.uuid4().hex
+    with JOBS_LOCK:
+        JOBS[job_id] = {
+            "id": job_id,
+            "assessment_id": assessment_id,
+            "document_id": assessment_id,
+            "source_name": f"{len(descriptors)} PDFs",
+            "source_count": len(descriptors),
+            "sources": [{"source_id": item["source_id"], "filename": item["filename"]} for item in descriptors],
+            "provider": provider,
+            "model": model,
+            "dimensions": selected_dimensions,
+            "report_format": report_format,
+            "submission_fingerprint": fingerprint,
+            "status": "queued",
+            "stage": "queued",
+            "message": "รอเริ่มประมวลผล PDF ทั้งหมดร่วมกัน",
+            "progress": 0,
+            "created_at": _now(),
+            "updated_at": _now(),
+            "paths": {
+                "manifest": str(_manifest_path(assessment_id)),
+                **{item["source_id"].lower(): str(item["path"]) for item in descriptors},
+            },
+        }
+    background_tasks.add_task(
+        _run_multi_pipeline,
+        job_id,
+        assessment_id,
+        descriptors,
+        provider,
+        model,
+        selected_dimensions,
+        report_format,
+    )
+    return {"id": job_id, "assessment_id": assessment_id}
+
+
 @app.get("/api/jobs/{job_id}")
 def get_job(job_id: str) -> dict[str, Any]:
     return _job_payload(job_id)
@@ -413,7 +877,7 @@ def get_job(job_id: str) -> dict[str, Any]:
 
 @app.get("/api/jobs/{job_id}/output/{output_name}")
 def download_output(job_id: str, output_name: str) -> FileResponse:
-    if output_name not in {"phase03", "phase04", "phase05", "phase06", "phase07_scoring", "report_pdf", "report_docx"}:
+    if output_name not in {"manifest", "phase03", "phase04", "phase05", "phase06", "phase07_scoring", "report_pdf", "report_docx"}:
         raise HTTPException(status_code=404, detail="ไม่พบชนิดผลลัพธ์")
     with JOBS_LOCK:
         job = JOBS.get(job_id)

@@ -51,7 +51,7 @@ def load_llm_settings(provider: str | None = None, model: str | None = None) -> 
     try:
         # Phase 05 requires a small structured object. 512 tokens leaves room
         # for Qwen3-8B's KV cache on 8 GB GPUs while remaining ample for JSON.
-        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "512"))
+        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "8192").strip())
     except ValueError as exc:
         raise ValueError("IOP_LLM_MAX_NEW_TOKENS must be an integer.") from exc
     if max_new_tokens < 1:
