@@ -7,6 +7,21 @@ from llm import LLMSettings, complete_json
 from .rubric import DEFAULT_SCORING_GUIDE
 
 
+class AssessmentValidationError(ValueError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        criterion_id: str | None = None,
+        invalid_ids: list[str] | None = None,
+        allowed_ids: list[str] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.criterion_id = criterion_id
+        self.invalid_ids = invalid_ids or []
+        self.allowed_ids = allowed_ids or []
+
+
 def _guide(scoring_guide: dict[str, str] | None) -> dict[str, str]:
     return scoring_guide or DEFAULT_SCORING_GUIDE
 
@@ -71,9 +86,14 @@ def _validate_assessment_fields(
     supplied_ids = set(_supplied_evidence_ids(packet))
     unknown_ids = set(citation_ids) - supplied_ids
     if unknown_ids:
-        raise ValueError(
+        invalid_ids = sorted(unknown_ids)
+        allowed_ids = _supplied_evidence_ids(packet)
+        raise AssessmentValidationError(
             f"LLM returned evidence_chunk_ids not supplied for criterion {criterion_id}: "
-            f"{sorted(unknown_ids)}."
+            f"{invalid_ids}. Allowed IDs: {allowed_ids}.",
+            criterion_id=criterion_id,
+            invalid_ids=invalid_ids,
+            allowed_ids=allowed_ids,
         )
 
     allowed_citations = _citation_limit(packet, top_k)
@@ -144,6 +164,33 @@ def _validate_assessment_fields(
     return assessment
 
 
+def _corrective_feedback(
+    error: ValueError,
+    packets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    allowed_by_criterion = {
+        str(packet.get("criterion", {}).get("criterion_id", "")): _supplied_evidence_ids(packet)
+        for packet in packets
+    }
+    feedback: dict[str, Any] = {
+        "previous_response_error": str(error),
+        "required_action": (
+            "Return a completely corrected JSON response. Use only each criterion's "
+            "allowed_evidence_chunk_ids. Never reuse an ID from another criterion."
+        ),
+        "allowed_evidence_chunk_ids_by_criterion": allowed_by_criterion,
+    }
+    if isinstance(error, AssessmentValidationError):
+        feedback.update(
+            {
+                "invalid_criterion_id": error.criterion_id,
+                "invalid_evidence_chunk_ids": error.invalid_ids,
+                "allowed_evidence_chunk_ids": error.allowed_ids,
+            }
+        )
+    return feedback
+
+
 def review_packet(
     criterion: dict[str, Any],
     evidence: list[dict[str, Any]],
@@ -190,6 +237,7 @@ def assess_with_llm(
     prompt_packet = {
         **packet,
         "citation_limit": allowed_citations,
+        "allowed_evidence_chunk_ids": _supplied_evidence_ids(packet),
     }
     prompt = json.dumps(
         {"scoring_guide": _guide(scoring_guide), **prompt_packet},
@@ -216,6 +264,7 @@ def assess_dimension_with_llm(
         raise ValueError("max_attempts must be at least 1.")
 
     last_error: ValueError | None = None
+    corrective_feedback: dict[str, Any] | None = None
     for attempt in range(1, max_attempts + 1):
         try:
             return _assess_dimension_once(
@@ -223,11 +272,13 @@ def assess_dimension_with_llm(
                 settings,
                 _guide(scoring_guide),
                 top_k,
+                corrective_feedback,
             )
         except ValueError as exc:
             last_error = exc
             if attempt == max_attempts:
                 break
+            corrective_feedback = _corrective_feedback(exc, packets)
             if on_retry:
                 on_retry(attempt + 1, exc)
 
@@ -242,9 +293,14 @@ def _assess_dimension_once(
     settings: LLMSettings,
     scoring_guide: dict[str, str],
     top_k: int | None,
+    corrective_feedback: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     prompt_packets = [
-        {**packet, "citation_limit": _citation_limit(packet, top_k)}
+        {
+            **packet,
+            "citation_limit": _citation_limit(packet, top_k),
+            "allowed_evidence_chunk_ids": _supplied_evidence_ids(packet),
+        }
         for packet in packets
     ]
     requested_top_k = (
@@ -261,6 +317,7 @@ def _assess_dimension_once(
             "scoring_guide": scoring_guide,
             "requested_top_k": requested_top_k,
             "criteria": prompt_packets,
+            "corrective_feedback": corrective_feedback,
         },
         ensure_ascii=False,
     )
@@ -304,6 +361,8 @@ def _assess_dimension_once(
 
                     "CRITICAL EVIDENCE CITATION RULES: "
                     "Each criterion has its own independent evidence list. "
+                    "The allowed_evidence_chunk_ids field is the authoritative "
+                    "whitelist for that criterion. "
                     "For each criterion_id, evidence_chunk_ids MUST contain only "
                     "chunk_id values explicitly present in that criterion's own "
                     "evidence list. "
@@ -324,6 +383,9 @@ def _assess_dimension_once(
                     "return an empty evidence_chunk_ids list for that criterion. "
                     "Never use an empty citation list to conceal relevant evidence "
                     "that is actually supplied. "
+                    "When corrective_feedback is present, the previous response was "
+                    "rejected. Correct every reported problem and use the invalid and "
+                    "allowed ID lists in that feedback; do not repeat invalid IDs. "
 
                     "EVIDENCE AND SCORING CONSISTENCY: "
                     "Scores, rationale_th, matched_points, strengths, and missing_points "

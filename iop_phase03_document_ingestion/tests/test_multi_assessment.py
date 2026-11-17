@@ -207,9 +207,9 @@ def test_three_pdf_submission_produces_one_combined_assessment(tmp_path: Path, m
     monkeypatch.setattr(web_main, "WORK_DIR", work_root)
     monkeypatch.setattr(web_main, "SOURCE_INDEX_PATH", upload_root / ".file-manager-metadata.json")
     settings = SimpleNamespace(
-        embedding_provider="none",
-        embedding_model="none",
-        embedding_dimensions=0,
+        embedding_provider="hash",
+        embedding_model="hash",
+        embedding_dimensions=8,
         chunk_max_chars=2000,
         chunk_overlap_blocks=0,
         min_section_heading_chars=80,

@@ -9,6 +9,7 @@ import subprocess
 import sys
 import uuid
 import pymupdf
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
@@ -55,8 +56,13 @@ DEFAULT_MODELS = {
 }
 IOP_DIMENSIONS = tuple(f"D{index}" for index in range(1, 9))
 # Keep the Qwen request context small enough for the local 8 GB RTX 4060.
-WEB_LLM_TOP_K = 5
-WEB_SEMANTIC_WEIGHT = 0.7
+WEB_LLM_TOP_K = int(os.getenv("IOP_WEB_TOP_K", "5"))
+WEB_LLM_BATCH_SIZE = int(os.getenv("IOP_WEB_LLM_BATCH_SIZE", "1"))
+WEB_MAX_EVIDENCE_CHARS = int(os.getenv("IOP_WEB_MAX_EVIDENCE_CHARS", "1200"))
+WEB_SEMANTIC_WEIGHT = float(os.getenv("IOP_WEB_SEMANTIC_WEIGHT", "0.7"))
+WEB_RETRIEVAL_MODE = os.getenv("IOP_WEB_RETRIEVAL_MODE", "hybrid").strip().lower()
+WEB_RETRIEVAL_FALLBACK = os.getenv("IOP_WEB_RETRIEVAL_FALLBACK", "error").strip().lower()
+WEB_PHASE05_RESTARTS = int(os.getenv("IOP_WEB_PHASE05_RESTARTS", "1"))
 JOBS: dict[str, dict[str, Any]] = {}
 JOBS_LOCK = Lock()
 SOURCE_INDEX_LOCK = Lock()
@@ -64,6 +70,15 @@ MULTI_MAX_FILES = int(os.getenv("IOP_MULTI_MAX_FILES", "10"))
 MULTI_MAX_FILE_BYTES = int(os.getenv("IOP_MULTI_MAX_FILE_BYTES", str(50 * 1024 * 1024)))
 MULTI_MAX_TOTAL_BYTES = int(os.getenv("IOP_MULTI_MAX_TOTAL_BYTES", str(200 * 1024 * 1024)))
 MULTI_MIN_FREE_BYTES = int(os.getenv("IOP_MULTI_MIN_FREE_BYTES", str(100 * 1024 * 1024)))
+
+if WEB_RETRIEVAL_MODE not in {"lexical", "embedding", "hybrid"}:
+    raise RuntimeError("IOP_WEB_RETRIEVAL_MODE must be lexical, embedding, or hybrid")
+if WEB_RETRIEVAL_FALLBACK not in {"lexical", "error"}:
+    raise RuntimeError("IOP_WEB_RETRIEVAL_FALLBACK must be lexical or error")
+if WEB_LLM_TOP_K < 1 or WEB_LLM_BATCH_SIZE < 1 or WEB_MAX_EVIDENCE_CHARS < 1:
+    raise RuntimeError("Web Phase 05 top-k, batch size, and evidence characters must be positive")
+if not 0 <= WEB_SEMANTIC_WEIGHT <= 1 or WEB_PHASE05_RESTARTS < 0:
+    raise RuntimeError("Invalid Web semantic weight or Phase 05 restart count")
 
 
 def _configured_output_roots() -> list[Path]:
@@ -295,6 +310,184 @@ def recover_interrupted_multi_jobs() -> None:
 app.router.add_event_handler("startup", recover_interrupted_multi_jobs)
 
 
+def _web_phase04_settings() -> Settings:
+    settings = Settings.load()
+    if WEB_RETRIEVAL_MODE not in {"embedding", "hybrid"}:
+        return settings
+    if settings.embedding_provider != "none":
+        return settings
+    if "PHASE04_EMBEDDING_PROVIDER" in os.environ:
+        if WEB_RETRIEVAL_FALLBACK == "lexical":
+            return settings
+        raise RuntimeError(
+            f"Web {WEB_RETRIEVAL_MODE} retrieval requires Phase 04 embeddings, but "
+            "PHASE04_EMBEDDING_PROVIDER is explicitly set to 'none'. Configure a "
+            "supported provider or set IOP_WEB_RETRIEVAL_MODE=lexical."
+        )
+    return replace(
+        settings,
+        embedding_provider="sentence_transformers",
+        embedding_model=os.getenv(
+            "PHASE04_EMBEDDING_MODEL",
+            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        ),
+        embedding_dimensions=int(os.getenv("PHASE04_EMBEDDING_DIMENSIONS", "384")),
+    )
+
+
+def _build_phase04_for_web(
+    source: dict[str, Any],
+    settings: Settings,
+    source_label: str,
+) -> tuple[dict[str, Any], Settings, str | None]:
+    create_embeddings = settings.embedding_provider != "none"
+    try:
+        return (
+            build_phase04(source, settings, embed=create_embeddings),
+            settings,
+            None,
+        )
+    except Exception as exc:
+        if create_embeddings and WEB_RETRIEVAL_FALLBACK == "lexical":
+            fallback_settings = replace(settings, embedding_provider="none")
+            phase04 = build_phase04(source, fallback_settings, embed=False)
+            return (
+                phase04,
+                fallback_settings,
+                (
+                    f"Phase 04 embeddings unavailable for {source_label}: {exc}. "
+                    "Continuing with the explicitly configured lexical fallback."
+                ),
+            )
+        raise RuntimeError(
+            f"Phase 04 embedding failed for {source_label} "
+            f"with provider={settings.embedding_provider}, "
+            f"model={settings.embedding_model}: {exc}"
+        ) from exc
+
+
+def _phase05_command_arguments(
+    phase04_path: Path,
+    phase05_path: Path,
+    provider: str,
+    model: str | None,
+    dimensions: list[str],
+) -> list[str]:
+    command = [
+        sys.executable,
+        "-m",
+        "phase05.cli",
+        "--phase04",
+        str(phase04_path),
+        "--rubric",
+        str(RUBRIC_PATH),
+        "--output",
+        str(phase05_path),
+        "--provider",
+        provider,
+        "--top-k",
+        str(WEB_LLM_TOP_K),
+        "--retrieval",
+        WEB_RETRIEVAL_MODE,
+        "--retrieval-fallback",
+        WEB_RETRIEVAL_FALLBACK,
+        "--semantic-weight",
+        str(WEB_SEMANTIC_WEIGHT),
+        "--batch-size",
+        str(WEB_LLM_BATCH_SIZE),
+        "--max-evidence-chars",
+        str(WEB_MAX_EVIDENCE_CHARS),
+        "--dimensions",
+        ",".join(dimensions),
+        "--resume",
+    ]
+    if model:
+        command.extend(["--model", model])
+    return command
+
+
+def _run_phase05_subprocess(
+    job_id: str,
+    command: list[str],
+    phase05_path: Path,
+    provider_name: str,
+    progress_start: int,
+    progress_span: int,
+) -> None:
+    combined_log: list[str] = []
+    for process_attempt in range(1, WEB_PHASE05_RESTARTS + 2):
+        process = subprocess.Popen(
+            command,
+            cwd=PROJECT_ROOT,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env={
+                **os.environ,
+                "PYTORCH_CUDA_ALLOC_CONF": os.getenv(
+                    "PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True"
+                ),
+            },
+        )
+        attempt_log: list[str] = []
+        assert process.stdout is not None
+        for raw_line in process.stdout:
+            line = raw_line.strip()
+            if not line:
+                continue
+            attempt_log.append(line)
+            retrieval_match = re.match(
+                r"^Retrieval:\s+requested=([a-z_]+),\s+effective=([a-z_]+)$",
+                line,
+            )
+            if retrieval_match:
+                requested, effective = retrieval_match.groups()
+                _update_job(
+                    job_id,
+                    retrieval_requested=requested,
+                    retrieval_effective=effective,
+                    message=f"Retrieval: requested={requested}, effective={effective}",
+                )
+            progress_match = re.match(r"^\[(\d+)/(\d+)\]\s+(.+)$", line)
+            if progress_match:
+                current = int(progress_match.group(1))
+                total = int(progress_match.group(2))
+                detail = progress_match.group(3)
+                completed = (
+                    current
+                    if detail.lower().startswith(("completed ", "skipped "))
+                    else current - 1
+                )
+                _update_job(
+                    job_id,
+                    message=f"{provider_name}: {detail}",
+                    progress=progress_start + round(progress_span * completed / total),
+                )
+        return_code = process.wait()
+        combined_log.extend(attempt_log)
+        if return_code == 0:
+            return
+        if process_attempt <= WEB_PHASE05_RESTARTS and phase05_path.is_file():
+            _update_job(
+                job_id,
+                message=(
+                    f"Phase 05 หยุดก่อนจบ กำลังทำต่อจาก checkpoint "
+                    f"({process_attempt}/{WEB_PHASE05_RESTARTS})"
+                ),
+            )
+            continue
+        detail = "\n".join(combined_log[-50:])
+        with JOBS_LOCK:
+            if not JOBS[job_id].get("retrieval_effective"):
+                JOBS[job_id].update(
+                    retrieval_effective="unavailable",
+                    updated_at=_now(),
+                )
+        raise RuntimeError(detail or f"Phase 05 exited with status {return_code}.")
+
+
 def _run_multi_pipeline(
     job_id: str,
     assessment_id: str,
@@ -346,7 +539,7 @@ def _run_multi_pipeline(
             outputs={"phase03": phase03_path.name},
         )
 
-        settings = Settings.load()
+        settings = _web_phase04_settings()
         create_embeddings = settings.embedding_provider != "none"
         phase04_results: list[tuple[dict[str, Any], dict[str, Any]]] = []
         for index, (descriptor, extracted) in enumerate(phase03_results, start=1):
@@ -357,9 +550,35 @@ def _run_multi_pipeline(
                 message=f"กำลังสร้าง chunks{(' และ embeddings' if create_embeddings else '')} ไฟล์ {index}/{len(sources)}: {descriptor['filename']}",
                 progress=progress,
             )
-            phase04_results.append(
-                (descriptor, build_phase04(extracted, settings, embed=create_embeddings))
-            )
+            try:
+                built_phase04, settings, fallback_message = _build_phase04_for_web(
+                    extracted,
+                    settings,
+                    descriptor["filename"],
+                )
+                create_embeddings = settings.embedding_provider != "none"
+                if fallback_message:
+                    _update_job(
+                        job_id,
+                        message=fallback_message,
+                        retrieval_effective="lexical",
+                    )
+                    phase04_results = [
+                        (
+                            prior_descriptor,
+                            build_phase04(
+                                prior_extracted,
+                                settings,
+                                embed=False,
+                            ),
+                        )
+                        for prior_descriptor, prior_extracted in phase03_results[:index]
+                    ]
+                else:
+                    phase04_results.append((descriptor, built_phase04))
+            except Exception:
+                _update_job(job_id, retrieval_effective="unavailable")
+                raise
         combined04 = combine_phase04_sources(assessment_id, phase04_results)
         phase04_path = OUTPUT_DIR / f"{assessment_id}_phase04.json"
         write_json_atomic(phase04_path, combined04)
@@ -378,41 +597,17 @@ def _run_multi_pipeline(
             _update_job(job_id, stage="phase05", message=f"{provider_name} กำลังประเมินหลักฐานจาก PDF ทั้งหมดร่วมกัน", progress=55)
             suffix = "" if dimensions == list(IOP_DIMENSIONS) else "_" + "-".join(dimensions)
             phase05_path = OUTPUT_DIR / f"{assessment_id}_phase05{suffix}_assessment.json"
-            command = [
-                sys.executable, "-m", "phase05.cli",
-                "--phase04", str(phase04_path), "--rubric", str(RUBRIC_PATH),
-                "--output", str(phase05_path), "--provider", provider,
-                "--top-k", str(WEB_LLM_TOP_K), "--retrieval", "hybrid",
-                "--semantic-weight", str(WEB_SEMANTIC_WEIGHT),
-                "--dimensions", ",".join(dimensions),
-            ]
-            if model:
-                command.extend(["--model", model])
-            process = subprocess.Popen(
-                command,
-                cwd=PROJECT_ROOT,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": os.getenv("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")},
+            command = _phase05_command_arguments(
+                phase04_path, phase05_path, provider, model, dimensions
             )
-            log: list[str] = []
-            assert process.stdout is not None
-            for raw_line in process.stdout:
-                line = raw_line.strip()
-                if not line:
-                    continue
-                log.append(line)
-                match = re.match(r"^\[(\d+)/(\d+)\]\s+(.+)$", line)
-                if match:
-                    current, total, detail = int(match.group(1)), int(match.group(2)), match.group(3)
-                    completed = current if detail.lower().startswith(("completed ", "skipped ")) else current - 1
-                    _update_job(job_id, message=f"{provider_name}: {detail}", progress=55 + round(35 * completed / total))
-            return_code = process.wait()
-            if return_code != 0:
-                raise RuntimeError("\n".join(log[-50:]) or f"Phase 05 exited with status {return_code}.")
+            _run_phase05_subprocess(
+                job_id,
+                command,
+                phase05_path,
+                provider_name,
+                progress_start=55,
+                progress_span=35,
+            )
             paths["phase05"] = str(phase05_path)
             manifest_outputs["phase05"] = phase05_path.name
 
@@ -489,17 +684,27 @@ def _run_pipeline(
             paths={"source": str(source_path), "phase03": str(phase03_path)},
         )
 
-        phase04_settings = Settings.load()
+        phase04_settings = _web_phase04_settings()
         create_embeddings = phase04_settings.embedding_provider != "none"
         phase04_message = "กำลังแบ่งข้อความเป็น evidence chunks"
         if create_embeddings:
             phase04_message += " และสร้าง embeddings"
         _update_job(job_id, stage="phase04", message=phase04_message, progress=45)
-        phase04 = build_phase04(
-            phase03,
-            phase04_settings,
-            embed=create_embeddings,
-        )
+        try:
+            phase04, phase04_settings, fallback_message = _build_phase04_for_web(
+                phase03,
+                phase04_settings,
+                phase03.get("source_file", "PDF"),
+            )
+            if fallback_message:
+                _update_job(
+                    job_id,
+                    message=fallback_message,
+                    retrieval_effective="lexical",
+                )
+        except Exception:
+            _update_job(job_id, retrieval_effective="unavailable")
+            raise
         phase04_path = OUTPUT_DIR / f"{phase03['document_id']}_phase04.json"
         phase04_path.write_text(json.dumps(phase04, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -518,61 +723,17 @@ def _run_pipeline(
                 else "_" + "-".join(dimensions)
             )
             phase05_path = OUTPUT_DIR / f"{phase03['document_id']}_phase05{dimension_suffix}_assessment.json"
-            command = [
-                sys.executable, "-m", "phase05.cli",
-                "--phase04", str(phase04_path),
-                "--rubric", str(RUBRIC_PATH),
-                "--output", str(phase05_path),
-                "--provider", provider,
-                "--top-k", str(WEB_LLM_TOP_K),
-                "--retrieval", "hybrid",
-                "--semantic-weight", str(WEB_SEMANTIC_WEIGHT),
-                "--dimensions", ",".join(dimensions),
-            ]
-            if model:
-                command.extend(["--model", model])
-            process = subprocess.Popen(
-                command,
-                cwd=PROJECT_ROOT,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                env={**os.environ, "PYTORCH_CUDA_ALLOC_CONF": os.getenv("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")},
+            command = _phase05_command_arguments(
+                phase04_path, phase05_path, provider, model, dimensions
             )
-            phase05_log = []
-            assert process.stdout is not None
-            for line in process.stdout:
-                line = line.strip()
-                if not line:
-                    continue
-                phase05_log.append(line)
-                match = re.match(r"^\[(\d+)/(\d+)\]\s+(.+)$", line)
-                if match:
-                    dimension_index = int(match.group(1))
-                    total_dimensions = int(match.group(2))
-                    detail = match.group(3)
-                    normalized_detail = detail.lower()
-                    completed_dimensions = (
-                        dimension_index
-                        if normalized_detail.startswith(("completed ", "skipped "))
-                        else dimension_index - 1
-                    )
-                    progress = 65 + round(
-                        29 * completed_dimensions / total_dimensions
-                    )
-                    _update_job(
-                        job_id,
-                        message=f"{provider_name}: {detail}",
-                        progress=progress,
-                    )
-            return_code = process.wait()
-            if return_code != 0:
-                detail = "\n".join(phase05_log[-50:])
-                raise RuntimeError(
-                    detail or f"Phase 05 exited with status {return_code}."
-                )
+            _run_phase05_subprocess(
+                job_id,
+                command,
+                phase05_path,
+                provider_name,
+                progress_start=65,
+                progress_span=29,
+            )
 
             _update_job(
                 job_id,
@@ -698,6 +859,12 @@ async def create_job(
             "model": model,
             "dimensions": selected_dimensions,
             "report_format": report_format,
+            "retrieval_requested": WEB_RETRIEVAL_MODE,
+            "retrieval_effective": None,
+            "top_k": WEB_LLM_TOP_K,
+            "semantic_weight": WEB_SEMANTIC_WEIGHT,
+            "batch_size": WEB_LLM_BATCH_SIZE,
+            "max_evidence_chars": WEB_MAX_EVIDENCE_CHARS,
             "status": "queued",
             "stage": "queued",
             "message": "รอเริ่มประมวลผล",
@@ -799,8 +966,11 @@ async def create_multi_assessment(
         "dimensions": selected_dimensions,
         "report_format": report_format,
         "top_k": WEB_LLM_TOP_K,
-        "retrieval": "hybrid",
+        "retrieval": WEB_RETRIEVAL_MODE,
         "semantic_weight": WEB_SEMANTIC_WEIGHT,
+        "batch_size": WEB_LLM_BATCH_SIZE,
+        "max_evidence_chars": WEB_MAX_EVIDENCE_CHARS,
+        "retrieval_fallback": WEB_RETRIEVAL_FALLBACK,
     }
     fingerprint = submission_fingerprint(descriptors, config)
     with JOBS_LOCK:
@@ -845,6 +1015,12 @@ async def create_multi_assessment(
             "model": model,
             "dimensions": selected_dimensions,
             "report_format": report_format,
+            "retrieval_requested": WEB_RETRIEVAL_MODE,
+            "retrieval_effective": None,
+            "top_k": WEB_LLM_TOP_K,
+            "semantic_weight": WEB_SEMANTIC_WEIGHT,
+            "batch_size": WEB_LLM_BATCH_SIZE,
+            "max_evidence_chars": WEB_MAX_EVIDENCE_CHARS,
             "submission_fingerprint": fingerprint,
             "status": "queued",
             "stage": "queued",

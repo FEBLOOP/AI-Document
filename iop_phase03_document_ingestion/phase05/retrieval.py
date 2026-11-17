@@ -46,11 +46,13 @@ def _lexical_similarity(query_terms: Counter, text: str) -> float:
 def query_embedder_from_chunks(chunks: list[dict[str, Any]]) -> Embedder:
     """Create the query embedder described by Phase 04 chunk metadata."""
     specifications = set()
+    embedded_count = 0
     for chunk in chunks:
         embedding = chunk.get("embedding") or {}
         vector = embedding.get("vector")
         if not isinstance(vector, list) or not vector:
             continue
+        embedded_count += 1
         specifications.add(
             (
                 str(embedding.get("provider", "")),
@@ -60,6 +62,11 @@ def query_embedder_from_chunks(chunks: list[dict[str, Any]]) -> Embedder:
         )
     if not specifications:
         raise ValueError("Phase 04 chunks do not contain embeddings.")
+    if embedded_count != len(chunks):
+        raise ValueError(
+            "Phase 04 chunks contain a partial set of embeddings: "
+            f"{embedded_count}/{len(chunks)} chunks are embedded."
+        )
     if len(specifications) != 1:
         raise ValueError("Phase 04 chunks contain inconsistent embedding metadata.")
     provider, model, dimensions = specifications.pop()
@@ -83,6 +90,19 @@ def retrieve(
         raise ValueError("semantic_weight must be between 0 and 1.")
     if mode in {"embedding", "hybrid"} and query_vector is None:
         raise ValueError(f"{mode} retrieval requires a query embedding.")
+    if mode in {"embedding", "hybrid"}:
+        missing = [
+            str(chunk.get("chunk_id", "<unknown>"))
+            for chunk in chunks
+            if not isinstance((chunk.get("embedding") or {}).get("vector"), list)
+            or not (chunk.get("embedding") or {}).get("vector")
+        ]
+        if missing:
+            preview = ", ".join(missing[:5])
+            raise ValueError(
+                f"{mode} retrieval requires embeddings for every chunk; "
+                f"missing {len(missing)} chunk(s): {preview}."
+            )
 
     query_terms = Counter(_terms(query))
     scored = []
@@ -106,9 +126,6 @@ def retrieve(
             if semantic_score is None:
                 continue
             score = semantic_score
-        elif semantic_score is None:
-            # A partially embedded Phase 04 package remains searchable.
-            score = lexical_score
         else:
             score = (
                 semantic_weight * semantic_score

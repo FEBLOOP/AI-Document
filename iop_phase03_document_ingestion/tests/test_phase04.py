@@ -17,6 +17,10 @@ def test_chunks_keep_phase03_provenance_and_embedding():
     chunk = output["chunks"][0]
     assert output["document_id"] == "DOC_TEST"
     assert chunk["page_start"] == 3 and chunk["source_blocks"][0]["bbox"] == [1, 2, 3, 4]
-    assert "การจัดการ" in chunk["normalized_text"]
-    assert len(chunk["embedding"]["vector"]) == 8
-    assert chunk["llm_ready"]["citation"]["source_block_ids"] == ["P3_OCR_1", "P3_OCR_2"]
+    assert "การจัดการ" in "\n".join(item["normalized_text"] for item in output["chunks"])
+    assert all(len(item["embedding"]["vector"]) == 8 for item in output["chunks"])
+    assert {
+        block_id
+        for item in output["chunks"]
+        for block_id in item["llm_ready"]["citation"]["source_block_ids"]
+    } == {"P3_OCR_1", "P3_OCR_2"}

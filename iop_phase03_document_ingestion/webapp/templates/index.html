@@ -99,6 +99,7 @@
       <div class="status-top"><span id="stage">กำลังเตรียมงาน</span><strong id="percent">0%</strong></div>
       <div class="bar"><i id="bar-fill"></i></div>
       <p id="message"></p>
+      <p id="retrieval-status" class="retrieval-status"></p>
       <dl id="metadata" class="hidden"></dl>
       <div id="downloads" class="downloads hidden"></div>
     </section>
@@ -199,6 +200,9 @@
       const job = await (await fetch(`/api/jobs/${id}`)).json();
       document.querySelector('#stage').textContent = job.stage;
       document.querySelector('#message').textContent = job.message;
+      document.querySelector('#retrieval-status').textContent = job.provider === 'none'
+        ? 'Retrieval: ไม่ได้เรียก Phase 05'
+        : `Retrieval: requested=${job.retrieval_requested || '-'}, effective=${job.retrieval_effective || 'pending'}`;
       document.querySelector('#percent').textContent = `${job.progress}%`;
       document.querySelector('#bar-fill').style.width = `${job.progress}%`;
       if (job.status === 'completed') {
@@ -206,7 +210,10 @@
         const meta = document.querySelector('#metadata');
         const identityLabel = job.assessment_id ? 'Assessment ID' : 'Document ID';
         const sourceMeta = job.source_count ? `<div><dt>Source PDFs</dt><dd>${job.source_count}</dd></div>` : '';
-        meta.innerHTML = `<div><dt>${identityLabel}</dt><dd>${job.document_id}</dd></div>${sourceMeta}<div><dt>จำนวนหน้ารวม</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>`;
+        const retrievalMeta = job.provider !== 'none'
+          ? `<div><dt>Retrieval</dt><dd>${job.retrieval_requested || '-'} → ${job.retrieval_effective || 'ไม่สำเร็จ'}</dd></div><div><dt>Phase 05</dt><dd>Top-K ${job.top_k} · Batch ${job.batch_size} · ${job.max_evidence_chars} chars</dd></div>`
+          : '';
+        meta.innerHTML = `<div><dt>${identityLabel}</dt><dd>${job.document_id}</dd></div>${sourceMeta}<div><dt>จำนวนหน้ารวม</dt><dd>${job.page_count}</dd></div><div><dt>OCR</dt><dd>${job.ocr_used ? 'ใช้' : 'ไม่ใช้'}</dd></div>${retrievalMeta}`;
         meta.classList.remove('hidden');
         const names = job.assessment_id ? ['manifest', 'phase03', 'phase04'] : ['phase03', 'phase04'];
         if (job.provider !== 'none') {

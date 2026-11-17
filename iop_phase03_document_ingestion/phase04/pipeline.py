@@ -82,6 +82,14 @@ def build_phase04(data: Any, settings: Settings, embed: bool = False) -> dict[st
     if embed:
         if settings.embedding_provider == "none": raise ValueError("Embedding is enabled but embedding_provider is 'none'.")
         vectors = create_embedder(settings.embedding_provider, settings.embedding_model, settings.embedding_dimensions).embed([c["normalized_text"] for c in chunks])
+        if len(vectors) != len(chunks):
+            raise ValueError(
+                "Embedding provider returned an unexpected vector count: "
+                f"expected {len(chunks)}, got {len(vectors)}."
+            )
+        dimensions = {len(vector) for vector in vectors if isinstance(vector, list)}
+        if len(dimensions) > 1 or any(not isinstance(vector, list) or not vector for vector in vectors):
+            raise ValueError("Embedding provider returned empty or inconsistent vectors.")
         for chunk, vector in zip(chunks, vectors):
             chunk["embedding"] = {"provider": settings.embedding_provider, "model": settings.embedding_model, "vector": vector}
     return {"schema_version": SCHEMA_VERSION, "document_id": document_id, "created_at": datetime.now(timezone.utc).isoformat(),
