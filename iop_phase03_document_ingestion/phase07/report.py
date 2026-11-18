@@ -25,6 +25,7 @@ from reportlab.platypus import (
 )
 
 from .scoring import calculate_scoring
+from .evidence_mapping import strengths_for_evidence
 
 
 NAVY = colors.HexColor("#17324D")
@@ -282,9 +283,11 @@ def _criterion_story(
     if citations:
         story.append(_paragraph("หลักฐานที่โมเดลเลือกอ้างอิง", styles["h3"]))
         citation_rows = [[
-            _paragraph("Chunk", styles["small"]),
+            _paragraph("Source PDF", styles["small"]),
             _paragraph("หน้า", styles["small"]),
+            _paragraph("Chunk", styles["small"]),
             _paragraph("ข้อความหลักฐาน", styles["small"]),
+            _paragraph("จุดแข็งที่เกี่ยวข้อง", styles["small"]),
         ]]
         for citation in citations:
             start = citation.get("page_start") or citation.get("page")
@@ -293,16 +296,27 @@ def _criterion_story(
             excerpt = citation.get("text") or citation.get("excerpt") or "-"
             if len(str(excerpt)) > 320:
                 excerpt = str(excerpt)[:320].rstrip() + "…"
+            related_strengths = strengths_for_evidence(
+                criterion,
+                citation.get("chunk_id"),
+            )
+            related_text = (
+                "\n".join(f"• {strength}" for strength in related_strengths)
+                if related_strengths
+                else "—"
+            )
             citation_rows.append(
                 [
-                    _paragraph(citation.get("chunk_id"), styles["small"]),
+                    _paragraph(citation.get("source_filename") or "—", styles["small"]),
                     _paragraph(page, styles["small"]),
+                    _paragraph(citation.get("chunk_id"), styles["small"]),
                     _paragraph(excerpt, styles["small"]),
+                    _paragraph(related_text, styles["small"]),
                 ]
             )
         citation_table = Table(
             citation_rows,
-            colWidths=[30 * mm, 18 * mm, 112 * mm],
+            colWidths=[30 * mm, 13 * mm, 27 * mm, 55 * mm, 35 * mm],
             repeatRows=1,
         )
         citation_table.setStyle(

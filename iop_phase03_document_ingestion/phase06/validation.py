@@ -33,6 +33,59 @@ def citation_map(result: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["chunk_id"]: copy.deepcopy(item) for item in result.get("evidence", []) if item.get("chunk_id")}
 
 
+def normalized_strength_evidence_mapping(
+    assessment: dict[str, Any],
+    selected_ids: list[str],
+    criterion_id: str,
+) -> list[dict[str, Any]]:
+    """Validate and normalize the optional Phase 05 strength/citation links."""
+    raw_mapping = assessment.get("strength_evidence_mapping")
+    if raw_mapping is None:
+        return []
+    if not isinstance(raw_mapping, list):
+        raise ValueError(
+            f"Invalid Phase 05 strength_evidence_mapping for {criterion_id}."
+        )
+    raw_strengths = assessment.get("strengths")
+    strengths = [str(value) for value in raw_strengths] if isinstance(raw_strengths, list) else []
+    if any(not value.strip() for value in strengths) or len(strengths) != len(set(strengths)):
+        raise ValueError(f"Invalid Phase 05 strengths for {criterion_id}.")
+    selected = set(selected_ids)
+    combined = {strength: [] for strength in strengths}
+    mapped: set[str] = set()
+    for entry in raw_mapping:
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"Invalid Phase 05 strength_evidence_mapping entry for {criterion_id}."
+            )
+        strength = entry.get("strength")
+        if not isinstance(strength, str) or strength not in combined:
+            raise ValueError(
+                f"Unknown mapped strength in Phase 05 for {criterion_id}: {strength!r}."
+            )
+        chunk_ids = entry.get("evidence_chunk_ids")
+        if not isinstance(chunk_ids, list):
+            raise ValueError(f"Invalid mapped evidence IDs in Phase 05 for {criterion_id}.")
+        mapped.add(strength)
+        for chunk_id in chunk_ids:
+            if not isinstance(chunk_id, str) or chunk_id not in selected:
+                raise ValueError(
+                    f"Strength mapping references unselected evidence in Phase 05 for "
+                    f"{criterion_id}: {chunk_id!r}."
+                )
+            if chunk_id not in combined[strength]:
+                combined[strength].append(chunk_id)
+    missing = [strength for strength in strengths if strength not in mapped]
+    if missing:
+        raise ValueError(
+            f"Phase 05 strength_evidence_mapping omits strengths for {criterion_id}: {missing}."
+        )
+    return [
+        {"strength": strength, "evidence_chunk_ids": combined[strength]}
+        for strength in strengths
+    ]
+
+
 def validate_summary_integrity(summary: dict[str, Any]) -> None:
     """Ensure Phase 06 retained every immutable Phase 05 criterion snapshot."""
     source = summary.get("source_assessment", {})
@@ -70,6 +123,30 @@ def validate_summary_integrity(summary: dict[str, Any]) -> None:
                     raise ValueError(f"Invalid selected_evidence_count for {criterion_id}.")
                 if criterion.get("retrieved_evidence_count") != len(evidence_ids):
                     raise ValueError(f"Invalid retrieved_evidence_count for {criterion_id}.")
+                expected_strengths = (
+                    [str(value) for value in assessment.get("strengths", [])]
+                    if isinstance(assessment.get("strengths"), list)
+                    else []
+                )
+                if criterion.get("strengths", []) != expected_strengths:
+                    raise ValueError(
+                        f"Phase 06 strengths do not match Phase 05 for {criterion_id}."
+                    )
+                expected_mapping = normalized_strength_evidence_mapping(
+                    assessment,
+                    expected_citation_ids,
+                    str(criterion_id),
+                )
+                observed_mapping = criterion.get("strength_evidence_mapping")
+                if observed_mapping is None:
+                    if expected_mapping:
+                        raise ValueError(
+                            f"Phase 06 omitted strength_evidence_mapping for {criterion_id}."
+                        )
+                elif canonical_json(observed_mapping) != canonical_json(expected_mapping):
+                    raise ValueError(
+                        f"Phase 06 changed strength_evidence_mapping for {criterion_id}."
+                    )
             for citation in criterion.get("citations", []):
                 if citation.get("chunk_id") not in evidence_ids:
                     raise ValueError(f"Citation {citation.get('chunk_id')} is not Phase 05 evidence for {criterion_id}.")

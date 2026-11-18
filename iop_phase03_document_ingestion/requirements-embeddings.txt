@@ -1,3 +1,4 @@
-# Install only when semantic embeddings are needed.
+# Standalone embedding dependencies (also included in requirements.txt because
+# the Web workflow uses strict Hybrid Retrieval by default).
 sentence-transformers>=3.0
 openai>=1.0

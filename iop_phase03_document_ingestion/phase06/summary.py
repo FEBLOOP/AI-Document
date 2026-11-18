@@ -10,7 +10,14 @@ from llm import LLMSettings, complete_json, load_llm_settings
 
 from . import SCHEMA_VERSION
 from .styles import load_good_example_styles
-from .validation import assessment_id, citation_map, snapshot_digest, source_snapshot, validate_summary_integrity
+from .validation import (
+    assessment_id,
+    citation_map,
+    normalized_strength_evidence_mapping,
+    snapshot_digest,
+    source_snapshot,
+    validate_summary_integrity,
+)
 
 
 def _items(value: Any) -> list[str]:
@@ -59,6 +66,12 @@ def _criterion_summary(
         raise ValueError(
             f"Phase 05 selected citations that are not retrieved evidence: {sorted(invalid)}"
         )
+    criterion_id = str(snapshot["criterion"].get("criterion_id", ""))
+    strength_mapping = normalized_strength_evidence_mapping(
+        assessment,
+        selected_ids,
+        criterion_id,
+    )
     return {
         "criterion_id": snapshot["criterion"].get("criterion_id"),
         "component_id": snapshot["criterion"].get("component_id"),
@@ -74,6 +87,7 @@ def _criterion_summary(
         "summary": narrative if narrative is not None else _narrative(result),
         "matched_points": _items(assessment.get("matched_points")),
         "strengths": _items(assessment.get("strengths")),
+        "strength_evidence_mapping": strength_mapping,
         "areas_for_improvement": _items(assessment.get("missing_points")),
         "citations": [citations[chunk_id] for chunk_id in selected_ids],
         "selected_evidence_count": len(selected_ids),
@@ -162,11 +176,13 @@ def build_summary(phase05: dict[str, Any], good_examples: dict[str, Any], provid
         "created_at": datetime.now(timezone.utc).isoformat(),
         "summary_provider": settings.provider if settings else "none",
         "summary_model": settings.model if settings else None,
-        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "rubric": copy.deepcopy(phase05.get("rubric")), "criterion_snapshots": source_snapshots,
+        "source_assessment": {"schema_version": phase05.get("schema_version"), "assessment_id": assessment_id(phase05), "sources": copy.deepcopy(phase05.get("sources", [])), "rubric": copy.deepcopy(phase05.get("rubric")), "criterion_snapshots": source_snapshots,
                               "criterion_snapshot_digests": {key: snapshot_digest(value) for key, value in source_snapshots.items()}},
         "good_examples_reference": {"knowledge_base": styles["knowledge_base"], "rules": styles["rules"], "overall_example": styles["overall_example"]},
         "overall_summary": str((generated or {}).get("overall_summary") or _template_overall(dimensions, styles["overall_example"])),
         "dimension_summaries": dimensions,
     }
+    if isinstance(phase05.get("sources"), list):
+        output["sources"] = copy.deepcopy(phase05["sources"])
     validate_summary_integrity(output)
     return output

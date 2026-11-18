@@ -12,6 +12,7 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 from .scoring import calculate_scoring
+from .evidence_mapping import strengths_for_evidence
 
 
 NAVY = "17324D"
@@ -102,6 +103,23 @@ def _fill_table_header(row, labels: list[str]) -> None:
     _set_repeat_table_header(row)
 
 
+def _set_evidence_table_widths(row) -> None:
+    for cell, width in zip(row.cells, [Cm(3.2), Cm(1.2), Cm(2.7), Cm(5.8), Cm(4.5)]):
+        cell.width = width
+
+
+def _fill_related_strengths(cell, strengths: list[str]) -> None:
+    paragraph = cell.paragraphs[0]
+    if not strengths:
+        run = paragraph.add_run("—")
+        _set_font(run, size=10)
+        return
+    for index, strength in enumerate(strengths):
+        target = paragraph if index == 0 else cell.add_paragraph()
+        run = target.add_run(f"• {strength}")
+        _set_font(run, size=10)
+
+
 def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
     document.add_heading(
         f"{_text(criterion.get('criterion_id'))}  {_text(criterion.get('criterion'))}",
@@ -132,9 +150,14 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
     citations = criterion.get("citations") or []
     if citations:
         document.add_heading("หลักฐานที่โมเดลเลือกอ้างอิง", level=3)
-        table = document.add_table(rows=1, cols=3)
+        table = document.add_table(rows=1, cols=5)
         table.style = "Table Grid"
-        _fill_table_header(table.rows[0], ["Chunk", "หน้า", "ข้อความหลักฐาน"])
+        table.autofit = False
+        _fill_table_header(
+            table.rows[0],
+            ["Source PDF", "หน้า", "Chunk", "ข้อความหลักฐาน", "จุดแข็งที่เกี่ยวข้อง"],
+        )
+        _set_evidence_table_widths(table.rows[0])
         for citation in citations:
             start = citation.get("page_start") or citation.get("page")
             end = citation.get("page_end") or start
@@ -143,13 +166,20 @@ def _add_criterion(document: Document, criterion: dict[str, Any]) -> None:
             if len(str(excerpt)) > 600:
                 excerpt = str(excerpt)[:600].rstrip() + "…"
             row = table.add_row()
+            _set_evidence_table_widths(row)
             for cell, value in zip(
-                row.cells,
-                [citation.get("chunk_id"), page, excerpt],
+                row.cells[:4],
+                [citation.get("source_filename") or "—", page, citation.get("chunk_id"), excerpt],
             ):
                 run = cell.paragraphs[0].add_run(_text(value))
                 _set_font(run, size=11)
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+            related_strengths = strengths_for_evidence(
+                criterion,
+                citation.get("chunk_id"),
+            )
+            _fill_related_strengths(row.cells[4], related_strengths)
+            row.cells[4].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
 
 
 def build_docx_report(

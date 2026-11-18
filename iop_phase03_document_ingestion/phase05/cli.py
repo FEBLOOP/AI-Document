@@ -1,5 +1,7 @@
 from __future__ import annotations
 import argparse
+import copy
+import hashlib
 import json
 import math
 import time
@@ -37,6 +39,27 @@ def _criterion_query(criterion: dict[str, Any]) -> str:
     )
 
 
+def _phase04_resume_fingerprint(phase04: dict[str, Any]) -> str:
+    identity = {
+        "document_id": phase04.get("document_id"),
+        "assessment_id": phase04.get("assessment_id"),
+        "sources": phase04.get("sources"),
+        "source_file": (phase04.get("metadata") or {}).get("source_file"),
+        "chunks": [
+            {
+                "chunk_id": chunk.get("chunk_id"),
+                "source_id": chunk.get("source_id"),
+                "source_filename": chunk.get("source_filename"),
+                "page_start": chunk.get("page_start"),
+                "page_end": chunk.get("page_end"),
+            }
+            for chunk in phase04.get("chunks", [])
+        ],
+    }
+    canonical = json.dumps(identity, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _build_output(
     phase04: dict[str, Any],
     settings: Any,
@@ -49,7 +72,7 @@ def _build_output(
     by_dimension = defaultdict(list)
     for result in results:
         by_dimension[result["criterion"]["dimension_id"]].append(result)
-    return {
+    output = {
         "schema_version": SCHEMA_VERSION,
         "document_id": phase04["document_id"],
         "created_at": created_at,
@@ -64,6 +87,11 @@ def _build_output(
             for key, value in by_dimension.items()
         ],
     }
+    if phase04.get("assessment_id"):
+        output["assessment_id"] = phase04["assessment_id"]
+    if isinstance(phase04.get("sources"), list):
+        output["sources"] = copy.deepcopy(phase04["sources"])
+    return output
 
 
 def _write_output_atomic(path: Path, output: dict[str, Any]) -> None:
@@ -80,6 +108,7 @@ def _resume_items(
     path: Path,
     phase04: dict[str, Any],
     settings: Any,
+    expected_run_config: dict[str, Any] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], str | None]:
     if not path.is_file():
         return {}, None
@@ -92,6 +121,19 @@ def _resume_items(
         raise ValueError("Resume output uses a different LLM provider.")
     if previous.get("assessment_model") != expected_model:
         raise ValueError("Resume output uses a different LLM model.")
+    previous_run_config = previous.get("run_config")
+    if expected_run_config and isinstance(previous_run_config, dict):
+        mismatched = [
+            key
+            for key, value in expected_run_config.items()
+            if key in previous_run_config and previous_run_config.get(key) != value
+        ]
+        if mismatched:
+            raise ValueError(
+                "Resume output uses different run configuration: "
+                + ", ".join(sorted(mismatched))
+                + "."
+            )
 
     completed = {}
     for dimension in previous.get("dimensions", []):
@@ -102,6 +144,10 @@ def _resume_items(
                 and str(item.get("status", "")).startswith("assessed")
                 and isinstance(item.get("assessment"), dict)
             ):
+                if criterion_id in completed:
+                    raise ValueError(
+                        f"Resume output contains duplicate criterion_id: {criterion_id}."
+                    )
                 completed[criterion_id] = item
     return completed, previous.get("created_at")
 
@@ -115,9 +161,15 @@ def main() -> None:
     parser.add_argument("--model", help="Overrides IOP_LLM_MODEL")
     parser.add_argument("--top-k", type=int, default=2)
     parser.add_argument("--retrieval", choices=["lexical", "embedding", "hybrid"], default="hybrid", help="Evidence retrieval strategy; hybrid falls back to lexical when embeddings are unavailable")
+    parser.add_argument(
+        "--retrieval-fallback",
+        choices=["lexical", "error"],
+        default="lexical",
+        help="Behavior when embedding/hybrid retrieval is unavailable; default preserves the legacy lexical fallback",
+    )
     parser.add_argument("--semantic-weight", type=float, default=0.7, help="Semantic score weight for hybrid retrieval (0-1)")
-    parser.add_argument("--batch-size", type=int, default=2, help="Criteria per LLM request")
-    parser.add_argument("--max-evidence-chars", type=int, default=800, help="Maximum prompt characters per evidence item")
+    parser.add_argument("--batch-size", type=int, default=1, help="Criteria per LLM request")
+    parser.add_argument("--max-evidence-chars", type=int, default=1200, help="Maximum prompt characters per evidence item")
     parser.add_argument("--retries", type=int, default=2, help="Retries for invalid or incomplete LLM JSON")
     parser.add_argument("--resume", action="store_true", help="Continue from assessed criteria in an existing output file")
     parser.add_argument("--dimensions", help="Comma-separated dimensions to assess, for example D1,D5; defaults to all")
@@ -181,7 +233,7 @@ def main() -> None:
                 for criterion_id, vector in zip(criterion_ids, vectors)
             }
         except Exception as exc:
-            if args.retrieval == "embedding":
+            if args.retrieval == "embedding" or args.retrieval_fallback == "error":
                 parser.error(f"Embedding retrieval is unavailable: {exc}")
             effective_retrieval = "lexical"
             print(
@@ -197,6 +249,18 @@ def main() -> None:
     for criterion in criteria:
         grouped_criteria[criterion["dimension_id"]].append(criterion)
 
+    run_config = {
+        "dimensions": selected_dimensions,
+        "top_k": args.top_k,
+        "retrieval": args.retrieval,
+        "effective_retrieval": effective_retrieval,
+        "retrieval_fallback": args.retrieval_fallback,
+        "semantic_weight": args.semantic_weight,
+        "batch_size": args.batch_size,
+        "max_evidence_chars": args.max_evidence_chars,
+        "retries": args.retries,
+        "phase04_fingerprint": _phase04_resume_fingerprint(phase04),
+    }
     completed_items: dict[str, dict[str, Any]] = {}
     resumed_created_at = None
     if args.resume:
@@ -204,6 +268,7 @@ def main() -> None:
             output_path,
             phase04,
             settings,
+            run_config,
         )
         if completed_items:
             print(
@@ -212,16 +277,6 @@ def main() -> None:
             )
 
     created_at = resumed_created_at or datetime.now(timezone.utc).isoformat()
-    run_config = {
-        "dimensions": selected_dimensions,
-        "top_k": args.top_k,
-        "retrieval": args.retrieval,
-        "effective_retrieval": effective_retrieval,
-        "semantic_weight": args.semantic_weight,
-        "batch_size": args.batch_size,
-        "max_evidence_chars": args.max_evidence_chars,
-        "retries": args.retries,
-    }
     results = []
     total_batches = sum(
         math.ceil(len(dimension_criteria) / args.batch_size)

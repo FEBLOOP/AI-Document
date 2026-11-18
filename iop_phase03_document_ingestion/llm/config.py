@@ -49,9 +49,9 @@ def load_llm_settings(provider: str | None = None, model: str | None = None) -> 
     if not api_key and selected_provider == "anthropic":
         api_key = os.getenv("ANTHROPIC_API_KEY")
     try:
-        # Phase 05 requires a small structured object. 512 tokens leaves room
-        # for Qwen3-8B's KV cache on 8 GB GPUs while remaining ample for JSON.
-        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "512"))
+        # Keep the project-wide default large enough for the structured Phase 05
+        # response; deployments can still override it through the environment.
+        max_new_tokens = int(os.getenv("IOP_LLM_MAX_NEW_TOKENS", "8192").strip())
     except ValueError as exc:
         raise ValueError("IOP_LLM_MAX_NEW_TOKENS must be an integer.") from exc
     if max_new_tokens < 1:
