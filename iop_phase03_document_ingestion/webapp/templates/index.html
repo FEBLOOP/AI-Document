@@ -36,39 +36,39 @@
 
   <main class="shell">
     <header>
-      <p class="eyebrow">IOP · DOCUMENT INTELLIGENCE</p>
-      <h1>ประเมินเอกสารด้วย AI</h1>
-      <p class="lead">อัปโหลด PDF หนึ่งไฟล์หรือหลายไฟล์เพื่อประเมินร่วมกันเป็น IOP Assessment เดียว พร้อมติดตามหลักฐานกลับไปยังไฟล์ต้นฉบับ</p>
+      <p class="eyebrow">IOP AssessAI</p>
+      <h1>ประเมินเอกสารด้วย AI-Powered Innovation Organization Assessment Engine</h1>
+      <p class="lead">อัปโหลดเอกสาร PDF หนึ่งไฟล์หรือหลายไฟล์ เพื่อวิเคราะห์และประเมินร่วมกันภายใต้ IOP Assessment เดียว พร้อมเชื่อมโยงผลการประเมินกับหลักฐานจากเอกสารต้นฉบับ</p>
     </header>
 
     <section class="panel">
       <form id="upload-form">
         <label id="dropzone" class="dropzone" for="pdf">
           <input id="pdf" type="file" accept="application/pdf" multiple>
-          <span class="drop-title">เลือกหรือลาก PDF มาวาง</span>
-          <span id="file-name">เพิ่มได้หลายครั้ง · PDF ทั้งหมดจะถูกประเมินร่วมกัน</span>
+          <span class="drop-title">เลือกไฟล์ PDF หรือวางไฟล์ที่นี่ <br> (Upload PDF Documents) </span>
+          <span id="file-name">อัปโหลดเอกสารได้หลายไฟล์ โดยระบบจะวิเคราะห์และประเมินเนื้อหาทั้งหมดร่วมกัน	</span>
         </label>
         <div id="selected-files" class="selected-files hidden" aria-live="polite"></div>
         <label class="field" for="provider">
-          <span>วิธีประเมิน LLM</span>
+          <span>วิธีการประมวลผลด้วย AI Engine </span>
           <select id="provider" name="provider">
-            <option value="huggingface">Qwen3-8B ผ่าน Hugging Face (GPU ในเครื่อง)</option>
-            <option value="ollama">Ollama ของบริษัท (LLM Host)</option>
+            <option value="ollama">Ollama NIA (LLM NIA Qwen3-8B)</option>
+            <option value="huggingface">Hugging Face (Local CPU/GPU)</option>
             <option value="openai">OpenAI API</option>
-            <option value="anthropic">Claude API (Anthropic)</option>
-            <option value="none">ไม่ใช้ LLM — สร้าง Phase 03/04 เท่านั้น</option>
+            <option value="anthropic">Anthropic API · Claude</option>
+            <option value="none">No LLM · Generate Phase 03/04 Only</option>
           </select>
         </label>
         <label id="model-field" class="field" for="model">
-          <span>โมเดล</span>
+          <span>AI โมเดล</span>
           <input id="model" name="model" value="Qwen/Qwen3-8B" required>
           <small id="provider-help">โหลด Qwen จาก Hugging Face และใช้ GPU ในเครื่อง</small>
         </label>
         <fieldset id="dimensions-field" class="dimensions-field">
-          <legend>มิติที่ต้องการประเมิน</legend>
+          <legend>มิติการประเมิน (Assessment Dimensions)</legend>
           <div class="dimension-actions">
-            <button id="select-all-dimensions" type="button">เลือกทั้งหมด</button>
-            <button id="clear-dimensions" type="button">ล้างการเลือก</button>
+            <button id="select-all-dimensions" type="button">เลือกทั้งหมด (Select All)</button>
+            <button id="clear-dimensions" type="button">ยกเลิกการเลือกทั้งหมด (Clear Selection)</button>
           </div>
           <div class="dimension-grid">
             <label><input type="checkbox" name="dimensions" value="D1" checked><span>D1</span></label>
@@ -80,16 +80,18 @@
             <label><input type="checkbox" name="dimensions" value="D7" checked><span>D7</span></label>
             <label><input type="checkbox" name="dimensions" value="D8" checked><span>D8</span></label>
           </div>
-          <small>เลือกเฉพาะมิติที่ต้องการเพื่อลดเวลาเรียก LLM เช่น D1 และ D5</small>
+          <small>เลือกมิติที่ต้องการประเมิน เพื่อกำหนดขอบเขตการวิเคราะห์และลดระยะเวลาประมวลผล เช่น D1 และ D5
+            <br>(Select the dimensions to be assessed to optimize processing time. For example,  D1 and D5.)
+          </small>
         </fieldset>
         <label id="report-format-field" class="field" for="report-format">
-          <span>รูปแบบรายงาน Phase 7</span>
+          <span>รูปแบบรายงาน (Report Format)</span>
           <select id="report-format" name="report_format">
             <option value="pdf">PDF</option>
             <option value="docx">Word (DOCX)</option>
             <option value="both">PDF และ Word (DOCX)</option>
           </select>
-          <small>Phase 6 จะถูกสร้างอัตโนมัติก่อนจัดทำรายงาน</small>
+          <small>ระบบจะประมวลผล โดยอัตโนมัติก่อนสร้างรายงาน(System will be automatically processed before report generation.) </small>
         </label>
         <button id="submit" type="submit">เริ่มวิเคราะห์เอกสาร</button>
       </form>
