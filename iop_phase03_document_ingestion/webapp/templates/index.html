@@ -337,8 +337,8 @@
       const actions = document.createElement('div'); actions.className = 'file-actions';
       const download = document.createElement('a'); download.href = `/api/files/${file.file_id}/download`; download.textContent = 'ดาวน์โหลด'; download.setAttribute('aria-label', `ดาวน์โหลด ${file.filename}`); actions.append(download);
       const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'ลบ'; remove.className = 'delete-link';
-      remove.disabled = file.is_source || file.active || !deletionConfigured || !deletionAuthorized;
-      remove.title = file.is_source ? 'Source PDF ได้รับการป้องกัน' : (file.active ? 'กำลังประมวลผล' : (!deletionAuthorized ? 'กรุณาปลดล็อกการลบ' : ''));
+      remove.disabled = !file.deletable || !deletionAuthorized;
+      remove.title = !deletionConfigured ? 'การลบถูกปิดที่เซิร์ฟเวอร์' : (file.active ? 'กำลังประมวลผล' : (!deletionAuthorized ? 'กรุณาปลดล็อกการลบ' : ''));
       remove.addEventListener('click', () => deleteFile(file)); actions.append(remove);
       row.append(name, meta, actions); return row;
     }
@@ -353,7 +353,8 @@
       sessionStorage.setItem('iopFileManagerToken', token); input.value = ''; deletionAuthorized = true; filesStatus.textContent = 'ปลดล็อกการลบแล้ว'; loadFiles();
     }
     async function deleteFile(file) {
-      if (!confirm(`ยืนยันลบไฟล์ผลลัพธ์นี้?\n\n${file.filename}\n\nการลบไฟล์ Phase ก่อนหน้าอาจทำให้ต้องประมวลผล Phase ถัดไปใหม่`)) return;
+      const fileType = file.is_source ? 'Source PDF' : 'ไฟล์ผลลัพธ์';
+      if (!confirm(`ยืนยันลบ ${fileType} นี้?\n\n${file.filename}\n\nการลบไฟล์ต้นฉบับหรือ Phase ก่อนหน้าอาจทำให้ต้องประมวลผลใหม่`)) return;
       filesStatus.textContent = `กำลังลบ ${file.filename}…`;
       const response = await fetch(`/api/files/${file.file_id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify({ confirmed: true }) });
       const result = await response.json();

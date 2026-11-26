@@ -25,6 +25,37 @@ def test_source_original_filename_index_persists(tmp_path: Path, monkeypatch) ->
     assert json.loads(index_path.read_text(encoding="utf-8"))["stored-id.pdf"] == "ต้นฉบับ.pdf"
 
 
+def test_source_delete_removes_only_its_metadata_entry(tmp_path: Path, monkeypatch) -> None:
+    source = tmp_path / "uploads"
+    output = tmp_path / "output"
+    source.mkdir()
+    output.mkdir()
+    index_path = source / ".file-manager-metadata.json"
+    monkeypatch.setattr(web_main, "INPUT_DIR", source)
+    monkeypatch.setattr(web_main, "SOURCE_INDEX_PATH", index_path)
+    first = source / "ASSESSMENT_AAAAAAAAAAAA" / "SOURCE_001.pdf"
+    second = source / "ASSESSMENT_AAAAAAAAAAAA" / "SOURCE_002.pdf"
+    first.parent.mkdir()
+    first.write_bytes(b"first")
+    second.write_bytes(b"second")
+    web_main._record_source_name("ASSESSMENT_AAAAAAAAAAAA/SOURCE_001.pdf", "first.pdf")
+    web_main._record_source_name("ASSESSMENT_AAAAAAAAAAAA/SOURCE_002.pdf", "second.pdf")
+    manager = FileManager(
+        [output], source, access_token="api-test-token",
+        source_deleted=web_main._remove_source_name, id_secret=b"api-test-secret",
+    )
+    monkeypatch.setattr(web_main, "FILE_MANAGER", manager)
+    record = next(row for row in manager.inventory()["files"] if row["filename"] == "SOURCE_001.pdf")
+
+    web_main.delete_managed_file(record["file_id"], {"confirmed": True}, AUTH["Authorization"])
+
+    metadata = json.loads(index_path.read_text(encoding="utf-8"))
+    assert "ASSESSMENT_AAAAAAAAAAAA/SOURCE_001.pdf" not in metadata
+    assert metadata["ASSESSMENT_AAAAAAAAAAAA/SOURCE_002.pdf"] == "second.pdf"
+    assert not first.exists()
+    assert second.exists()
+
+
 def test_file_manager_api_inventory_download_and_guarded_delete(tmp_path: Path, monkeypatch) -> None:
     output = tmp_path / "output"
     source = tmp_path / "uploads"

@@ -129,7 +129,7 @@ def test_deletion_fails_closed_without_access_configuration(tmp_path: Path) -> N
     assert (output / f"{DOC_A}.json").exists()
 
 
-def test_single_delete_requires_auth_confirmation_and_protects_source(tmp_path: Path) -> None:
+def test_single_delete_requires_auth_confirmation_and_allows_source(tmp_path: Path) -> None:
     manager, output, source = _manager(tmp_path)
     _write_json(output / f"{DOC_A}.json", DOC_A, source_file="original.pdf")
     (source / "original.pdf").write_bytes(b"source")
@@ -137,20 +137,66 @@ def test_single_delete_requires_auth_confirmation_and_protects_source(tmp_path: 
     generated = next(row for row in records if not row["is_source"])
     source_record = next(row for row in records if row["is_source"])
 
+    with pytest.raises(FileManagerError) as source_unauthenticated:
+        manager.delete_one(source_record["file_id"], None, confirmed=True)
+    assert source_unauthenticated.value.code == "unauthorized"
+    with pytest.raises(FileManagerError) as source_unconfirmed:
+        manager.delete_one(source_record["file_id"], AUTH, confirmed=False)
+    assert source_unconfirmed.value.code == "confirmation_required"
+    assert (source / "original.pdf").exists()
     with pytest.raises(FileManagerError) as unauthenticated:
         manager.delete_one(generated["file_id"], None, confirmed=True)
     assert unauthenticated.value.code == "unauthorized"
     with pytest.raises(FileManagerError) as unconfirmed:
         manager.delete_one(generated["file_id"], AUTH, confirmed=False)
     assert unconfirmed.value.code == "confirmation_required"
-    with pytest.raises(FileManagerError) as protected:
-        manager.delete_one(source_record["file_id"], AUTH, confirmed=True)
-    assert protected.value.code == "source_protected"
+    assert source_record["delete_status"] == "eligible"
+    assert source_record["deletable"] is True
+    source_result = manager.delete_one(source_record["file_id"], AUTH, confirmed=True)
+    assert source_result["filename"] == "original.pdf"
+    assert not (source / "original.pdf").exists()
 
     result = manager.delete_one(generated["file_id"], AUTH, confirmed=True)
     assert result["filename"] == f"{DOC_A}.json"
     assert not (output / f"{DOC_A}.json").exists()
-    assert (source / "original.pdf").exists()
+    assert not (source / "original.pdf").exists()
+
+
+def test_source_delete_runs_metadata_callback_only_after_unlink(tmp_path: Path) -> None:
+    removed: list[Path] = []
+    manager, output, source = _manager(tmp_path)
+    manager.source_deleted = removed.append
+    _write_json(output / f"{DOC_A}.json", DOC_A, source_file="original.pdf")
+    target = source / "original.pdf"
+    target.write_bytes(b"source")
+    source_record = next(row for row in manager.inventory()["files"] if row["is_source"])
+
+    manager.delete_one(source_record["file_id"], AUTH, confirmed=True)
+
+    assert removed == [target.resolve()]
+    assert not target.exists()
+
+
+def test_source_delete_requires_explicit_allowance_and_blocks_active_job(tmp_path: Path) -> None:
+    manager, output, source = _manager(
+        tmp_path, active=lambda document_id, _path: document_id == DOC_A,
+    )
+    _write_json(output / f"{DOC_A}.json", DOC_A, source_file="original.pdf")
+    target = source / "original.pdf"
+    target.write_bytes(b"source")
+    source_item = next(item for item in manager._scan() if item.is_source)
+    source_record = next(row for row in manager.inventory()["files"] if row["is_source"])
+
+    assert source_record["active"] is True
+    assert source_record["delete_status"] == "active_job"
+    assert source_record["deletable"] is False
+    with pytest.raises(FileManagerError) as protected:
+        manager._unlink(source_item)
+    assert protected.value.code == "source_protected"
+    with pytest.raises(FileManagerError) as active:
+        manager.delete_one(source_record["file_id"], AUTH, confirmed=True)
+    assert active.value.code == "active_job"
+    assert target.exists()
 
 
 def test_bulk_preview_and_delete_are_exact_and_never_include_source(tmp_path: Path) -> None:
@@ -220,3 +266,5 @@ def test_frontend_contains_refresh_hooks_and_preserves_assessment_controls() -> 
     assert 'id="file-sidebar"' in html
     assert "loadFiles();" in html
     assert "if (response.ok) await loadFiles()" in html
+    assert "remove.disabled = !file.deletable || !deletionAuthorized" in html
+    assert "file.is_source || file.active" not in html
