@@ -177,6 +177,24 @@ def _remove_source_names(stored_prefix: str) -> None:
         temporary.replace(SOURCE_INDEX_PATH)
 
 
+def _remove_source_name(path: Path) -> None:
+    try:
+        stored_name = path.resolve().relative_to(INPUT_DIR.resolve()).as_posix()
+    except (OSError, ValueError):
+        return
+    with SOURCE_INDEX_LOCK:
+        try:
+            current = json.loads(SOURCE_INDEX_PATH.read_text(encoding="utf-8"))
+        except (FileNotFoundError, OSError, UnicodeError, json.JSONDecodeError):
+            return
+        if not isinstance(current, dict) or stored_name not in current:
+            return
+        current.pop(stored_name, None)
+        temporary = SOURCE_INDEX_PATH.with_suffix(".tmp")
+        temporary.write_text(json.dumps(current, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary.replace(SOURCE_INDEX_PATH)
+
+
 _id_secret_text = os.getenv("IOP_FILE_MANAGER_ID_SECRET", "").strip()
 _id_secret = (
     _id_secret_text.encode("utf-8")
@@ -189,6 +207,7 @@ FILE_MANAGER = FileManager(
     access_token=os.getenv("IOP_FILE_MANAGER_ACCESS_TOKEN"),
     active_document=_file_has_active_job,
     source_name_for_path=_source_original_name,
+    source_deleted=_remove_source_name,
     id_secret=_id_secret,
 )
 
@@ -399,7 +418,7 @@ def _phase05_command_arguments(
         str(WEB_MAX_EVIDENCE_CHARS),
         "--dimensions",
         ",".join(dimensions),
-        "--resume",
+        #"--resume",
     ]
     if model:
         command.extend(["--model", model])
@@ -473,7 +492,7 @@ def _run_phase05_subprocess(
             _update_job(
                 job_id,
                 message=(
-                    f"Phase 05 หยุดก่อนจบ กำลังทำต่อจาก checkpoint "
+                    f"Phase 05 หยุดก่อนจบ กำลังเริ่มประเมินใหม่ "
                     f"({process_attempt}/{WEB_PHASE05_RESTARTS})"
                 ),
             )

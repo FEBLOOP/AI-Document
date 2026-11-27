@@ -85,6 +85,7 @@ class FileManager:
         access_token: str | None = None,
         active_document: Callable[[str | None, Path], bool] | None = None,
         source_name_for_path: Callable[[Path], str | None] | None = None,
+        source_deleted: Callable[[Path], None] | None = None,
         id_secret: bytes | None = None,
         preview_ttl_seconds: int = 300,
     ) -> None:
@@ -96,6 +97,7 @@ class FileManager:
         self.access_token = access_token.strip() if access_token and access_token.strip() else None
         self.active_document = active_document or (lambda _document_id, _path: False)
         self.source_name_for_path = source_name_for_path or (lambda _path: None)
+        self.source_deleted = source_deleted or (lambda _path: None)
         self.id_secret = id_secret or secrets.token_bytes(32)
         self.preview_ttl_seconds = preview_ttl_seconds
         self._previews: dict[str, dict[str, Any]] = {}
@@ -158,15 +160,14 @@ class FileManager:
         if confirmed is not True:
             raise FileManagerError("ต้องยืนยันการลบไฟล์", code="confirmation_required")
         item = self.locate(file_id)
-        if item.is_source:
-            self._audit("delete_one", item.file_id, item.document_id, "denied", "source_protected")
-            raise FileManagerError("ไม่อนุญาตให้ลบ Source PDF", status_code=403, code="source_protected")
         self._assert_not_active(item)
         try:
-            self._unlink(item)
+            self._unlink(item, allow_source=item.is_source)
         except FileManagerError as exc:
             self._audit("delete_one", item.file_id, item.document_id, "failed", exc.code)
             raise
+        if item.is_source:
+            self.source_deleted(item.path)
         self._audit("delete_one", item.file_id, item.document_id, "deleted", None)
         return {"deleted": [item.file_id], "filename": item.filename}
 
@@ -411,10 +412,11 @@ class FileManager:
             raise FileManagerError("ไฟล์เปลี่ยนแปลงแล้ว กรุณารีเฟรช", status_code=409, code="changed")
         return item
 
-    def _unlink(self, item: ManagedFile) -> None:
+    def _unlink(self, item: ManagedFile, *, allow_source: bool = False) -> None:
         item = self._revalidate(item)
-        if item.root.kind != "output":
-            raise FileManagerError("ลบได้เฉพาะ generated output", status_code=403, code="source_protected")
+        allowed_kinds = {"output", "source"} if allow_source else {"output"}
+        if item.root.kind not in allowed_kinds:
+            raise FileManagerError("ไม่อนุญาตให้ลบไฟล์ประเภทนี้", status_code=403, code="source_protected")
         try:
             item.path.unlink()
         except FileNotFoundError as exc:
@@ -432,7 +434,7 @@ class FileManager:
         return {"file_id": item.file_id, "size": item.size, "mtime_ns": item.mtime_ns}
 
     def _public_record(self, item: ManagedFile, *, active: bool) -> dict[str, Any]:
-        delete_status = "source_protected" if item.is_source else ("active_job" if active else "eligible")
+        delete_status = "active_job" if active else "eligible"
         return {
             "file_id": item.file_id,
             "document_id": item.document_id,
